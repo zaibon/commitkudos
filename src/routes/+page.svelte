@@ -2,7 +2,8 @@
 	import { createLinks } from '$lib/peanutes';
 	import type { CommitDetail, Author } from '$lib/types';
 	import { signer, chainId } from '$lib/wallet';
-	import { debounce } from 'debounce';
+	import pkg from 'debounce';
+	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { sendMail } from '$lib/mail';
 
