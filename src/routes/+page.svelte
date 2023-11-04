@@ -1,11 +1,18 @@
 <script lang="ts">
+	import { createLinks } from '$lib/peanutes';
 	import type { CommitDetail, User } from '$lib/types';
+	import { signer, chainId } from '$lib/wallet';
 	import { debounce } from 'debounce';
 	import { onMount } from 'svelte';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+
+	const toastStore = getToastStore();
 
 	let repository: string = 'kataras/iris';
 	let contributorsNr = 3;
+	let rewardAmount = 0;
 	let top: string[] = [];
+	let creatingLinks = false;
 
 	const topContributors = debounce(async () => {
 		const since = new Date();
@@ -20,6 +27,9 @@
 		}
 
 		const resp = await fetch(`/?repository=${repository}&since=${since.toISOString()}`);
+		if (resp.status != 200) {
+			return;
+		}
 		const commits = await resp.json();
 
 		const byLogin: Map<string, User> = new Map();
@@ -35,19 +45,35 @@
 			}
 		});
 		const byContributions = new Map([...contributors.entries()].sort((a, b) => b[1] - a[1]));
-		// take top x
 		let tmp = [...byContributions.keys()].slice(0, contributorsNr);
 		top = tmp;
-		console.log(top);
 	}, 500);
 
+	const createLink = async () => {
+		if (rewardAmount <= 0) {
+			return;
+		}
+		creatingLinks = true;
+		try {
+			const links = await createLinks($signer.signer, $chainId, 0.0001, 2, 0);
+			console.log(links);
+		} catch (error) {
+			console.log(error);
+			toastStore.trigger({
+				message: 'failed to generate rewards',
+				background: 'variant-filled-warning'
+			});
+		} finally {
+			creatingLinks = false;
+		}
+	};
 	onMount(topContributors);
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Find me name</h2>
-		<form>
+		<form class="w-3/5">
 			<input
 				bind:value={repository}
 				on:change={topContributors}
@@ -65,15 +91,36 @@
 				min="1"
 				placeholder="number of contributrs"
 			/>
-			{#each top as user}
-				<div class="flex flex-row justify-between mb-2">
-					<label class="label mr-2" for={user}>{user}</label>
-					<input class="input w-24" type="number" step="any" min="0" placeholder="reward amount" />
-				</div>
-			{/each}
+			{#if top.length > 0}
+				<input
+					bind:value={rewardAmount}
+					class="input mb-2"
+					type="number"
+					step="0.001"
+					min="0"
+					placeholder="reward amount"
+				/>
+				<span class="font-bold">Top contributors</span>
+				{#each top as user}
+					<div class="flex flex-row justify-between mb-2">
+						<p class="label mr-2">{user}</p>
+					</div>
+				{/each}
+			{/if}
 
 			{#if top.length > 0}
-				<button class="btn variant-filled-primary w-full" type="submit">Reward</button>
+				<button
+					on:click={createLink}
+					disabled={creatingLinks}
+					class="btn variant-filled-primary w-full"
+					type="submit"
+				>
+					{#if !creatingLinks}
+						Reward
+					{:else}
+						In progress ...
+					{/if}
+				</button>
 			{/if}
 		</form>
 	</div>
