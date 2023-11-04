@@ -1,4 +1,4 @@
-import peanut from '@squirrel-labs/peanut-sdk';
+import { peanut } from '@squirrel-labs/peanut-sdk';
 
 export async function createLinks(
 	wallet,
