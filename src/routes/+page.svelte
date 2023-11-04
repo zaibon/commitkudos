@@ -123,8 +123,8 @@
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2">Find me name</h2>
-		<form class="w-3/5">
+		<h2 class="h2">Find your top contributors</h2>
+		<form class="w-full">
 			<input
 				bind:value={repository}
 				on:change={topContributors}
@@ -140,13 +140,13 @@
 				type="number"
 				step="1"
 				min="1"
-				placeholder="number of contributrs"
+				placeholder="number of contributors to reward"
 			/>
 			{#if top.length > 0}
 				<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 					<input
 						bind:value={rewardAmount}
-						class="input mb-2"
+						class="input mb-2 w-full"
 						type="number"
 						step="any"
 						min="0"
@@ -169,28 +169,28 @@
 			{/if}
 
 			{#if top.length > 0 && !links.length}
-				<button
-					on:click={createLink}
-					disabled={creatingLinks}
-					class="btn variant-filled-primary w-full"
-					type="submit"
-				>
-					{#if !creatingLinks}
-						Reward
-					{:else}
-						In progress ...
-					{/if}
-				</button>
+				<div class="flex flex-row justify-evenly">
+					<button
+						on:click={createLink}
+						disabled={creatingLinks}
+						class="btn variant-filled-primary w-full mr-1"
+						type="submit"
+					>
+						{#if !creatingLinks}
+							Reward
+						{:else}
+							In progress ...
+						{/if}
+					</button>
+					<button class="btn variant-outline-primary w-full" disabled
+						>save recurring (coming soon)</button
+					>
+				</div>
 			{:else if links.length > 0}
 				<button on:click={sendEmails} class="btn variant-filled-primary w-full" type="submit">
 					Send emails
 				</button>
 			{/if}
 		</form>
-		<div>
-			{#each links as link}
-				<p>{link.link}</p>
-			{/each}
-		</div>
 	</div>
 </div>

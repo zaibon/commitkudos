@@ -24,6 +24,7 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	import logo from '$lib/logo.png';
 </script>
 
 <Toast position="tr" />
@@ -34,7 +35,7 @@
 		<!-- App Bar -->
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
+				<strong class="text-xl uppercase">CommitKudos</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<button class="btn btn-sm variant-ghost-surface" on:click={connect}>
