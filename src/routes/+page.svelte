@@ -115,7 +115,7 @@
 				return;
 			}
 			console.log(user.name, user.email, repository, link.link);
-			sendMail(user.name, user.email, repository, link);
+			await sendMail(user.name, user.email, repository, link.link);
 		}
 		toastStore.close(toastId);
 	};
