@@ -1,38 +1,33 @@
-# create-svelte
+# CommitKudos
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Empowering Open-Source Collaboration with Web3 Rewards,
+CommitKudos is a designed to celebrate and support the open-source community.
 
-## Creating a project
+We bridge the traditional world of open-source software development with the innovative landscape of Web3, offering a platform where maintainers and open-source users can reward their top contributors with cryptocurrency airdrops, acknowledging their invaluable work in a tangible way.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Our Mission
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+Open-source projects are the bedrock of the modern digital infrastructure. At CommitKudos, our goal is twofold:
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+**Support Open Source**: We aim to provide a sustainable and appreciative environment for open-source contributors, maintainers, and enthusiasts by rewarding their dedication and hard work.
 
-## Developing
+**Onboard New Users to Web3**: Through an intuitive and user-friendly interface, we're breaking down the barriers to Web3 entry, making it accessible for open-source communities to leverage the benefits of blockchain technology.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Built on Peanuts Protocol
 
-```bash
-npm run dev
+Leveraging the robust foundation of the Peanuts Protocol, CommitKudos integrates seamlessly into the existing workflows of repository maintainers and contributors. The Peanuts Protocol's innovative solutions for token distribution and management enable CommitKudos to facilitate a smooth, secure, and transparent reward system.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Getting Started with CommitKudos
 
-## Building
+To begin rewarding your contributors or to start earning rewards for your contributions, follow these simple steps:
 
-To create a production version of your app:
+1. **Connect Your Wallet**: Securely link your Web3 wallet to the CommitKudos platform.
+2. **Search the Repository** you want to reward: Add your open-source project's repository to CommitKudos.
+3. **Nominate Contributors**: Highlight the top contributors you wish to reward for their commitment.
+4. **Distribute Rewards**: Send crypto airdrops directly to your contributors' wallets with just a few clicks.
 
-```bash
-npm run build
-```
+## Join the CommitKudos Community
 
-You can preview the production build with `npm run preview`.
+Whether you're a maintainer looking to give back to your team, or a developer eager to contribute to open-source projects and step into the world of Web3, CommitKudos is your gateway to a more rewarding open-source ecosystem.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Together, let's build a future where open-source thrives and contributors are rewarded as they should be.
