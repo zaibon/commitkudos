@@ -4,6 +4,10 @@
 	import { initializeStores } from '@skeletonlabs/skeleton';
 	import { initStores, openWalletModal, address, isConnected } from '$lib/wallet';
 	import { Toast } from '@skeletonlabs/skeleton';
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
+
+	inject({ mode: dev ? 'development' : 'production' });
 
 	initializeStores();
 
