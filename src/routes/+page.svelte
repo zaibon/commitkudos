@@ -87,7 +87,13 @@
 			autohide: false
 		});
 		try {
-			links = await createLinks($signer.signer, $chainId, 0.0001, selectedContributors.length, 0);
+			links = await createLinks(
+				$signer.signer,
+				$chainId,
+				rewardAmount,
+				selectedContributors.length,
+				0
+			);
 			console.log(links);
 			toastStore.close(toastId);
 		} catch (error) {
