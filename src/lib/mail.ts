@@ -8,7 +8,7 @@ export async function sendMail(name, email, repoName, link) {
 		user_id: 'gIypGyouYkPNLooPl',
 		template_params: {
 			email: email,
-			from_name: 'rewarder',
+			from_name: 'CommitKudos',
 			to_name: name,
 			repo_name: repoName,
 			link: link
