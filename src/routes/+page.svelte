@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createLinks } from '$lib/peanutes';
-	import type { CommitDetail, Author } from '$lib/types';
+	import type { CommitDetail, Author, User } from '$lib/types';
 	import { signer, chainId } from '$lib/wallet';
 	import pkg from 'debounce';
 	const { debounce } = pkg;
@@ -17,7 +17,7 @@
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
 	let links: { link: string; txHash: string }[] = [];
-	const byLogin: Map<string, Author> = new Map();
+	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
 	const topContributors = debounce(async () => {
 		selectedContributors = [];
@@ -50,7 +50,10 @@
 		byLogin.clear();
 		let contributors: Map<string, number> = new Map();
 		commits.forEach((commit: CommitDetail) => {
-			byLogin.set(commit.commit.author.name, commit.commit.author);
+			byLogin.set(commit.commit.author.name, {
+				author: commit.commit.author,
+				user: commit.author
+			});
 
 			const nr = contributors.get(commit.commit.author.name);
 			if (!nr) {
@@ -64,7 +67,7 @@
 		top = tmp;
 		for (let i = 0; i < top.length; i++) {
 			const name = top[i];
-			const author = byLogin.get(name);
+			const author = byLogin.get(name)?.author;
 			if (author) {
 				selectedContributors = [...selectedContributors, author];
 			}
@@ -131,14 +134,16 @@
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Find your top contributors</h2>
 		<form class="w-full">
-			<input
-				bind:value={repository}
-				on:change={topContributors}
-				class="input"
-				type="text"
-				id="repository"
-				placeholder="repository name"
-			/>
+			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+				<div class="input-group-shim">https://github.com/</div>
+				<input
+					bind:value={repository}
+					on:change={topContributors}
+					type="text"
+					id="repository"
+					placeholder="owner/name"
+				/>
+			</div>
 			<input
 				bind:value={contributorsNr}
 				on:change={topContributors}
@@ -146,36 +151,50 @@
 				type="number"
 				step="1"
 				min="1"
-				placeholder="number of contributors to reward"
+				placeholder="Number of contributors to reward"
 			/>
 			{#if top.length > 0}
-				<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-					<input
-						bind:value={rewardAmount}
-						class="input mb-2 w-full"
-						type="number"
-						step="any"
-						min="0"
-						placeholder="reward amount"
-					/>
+				<input
+					bind:value={rewardAmount}
+					class="input mb-2"
+					type="number"
+					step="any"
+					min="0"
+					placeholder="reward amount"
+				/>
+				<div class="w-full">
+					<span class="font-bold">Top contributors</span>
+					{#if top}
+						<ul class="list">
+							{#each top as login}
+								{@const author = byLogin.get(login)?.author}
+								{@const user = byLogin.get(login)?.user}
+								<li class="flex flex-row justify-between">
+									<figure class="avatar flex aspect-square overflow-hidden w-8 rounded-full">
+										<img
+											class="avatar-image w-full h-full object-cover"
+											src={user?.avatar_url}
+											alt="avatar"
+										/>
+									</figure>
+									<span class="label mr-2">{author?.name} ({author?.email})</span>
+									<span>
+										<input
+											bind:group={selectedContributors}
+											value={user}
+											class="checkbox"
+											type="checkbox"
+										/>
+									</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</div>
-				<span class="font-bold">Top contributors</span>
-				{#each top as login}
-					{@const user = byLogin.get(login)}
-					<div class="flex flex-row justify-between mb-2">
-						<p class="label mr-2">{user?.name} ({user?.email})</p>
-						<input
-							bind:group={selectedContributors}
-							value={user}
-							class="checkbox"
-							type="checkbox"
-						/>
-					</div>
-				{/each}
 			{/if}
 
 			{#if top.length > 0 && !links.length}
-				<div class="flex flex-row justify-evenly">
+				<div class="flex flex-row justify-evenly mt-2">
 					<button
 						on:click={createLink}
 						disabled={creatingLinks}
