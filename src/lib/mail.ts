@@ -2,7 +2,7 @@
 import emailjs from '@emailjs/browser';
 
 export async function sendMail(name, email, repoName, link) {
-	let data = {
+	const data = {
 		service_id: 'service_38y1bph',
 		template_id: 'template_le3yohr',
 		user_id: 'gIypGyouYkPNLooPl',

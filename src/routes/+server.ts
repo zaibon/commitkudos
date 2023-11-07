@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (!repository) {
 		return;
 	}
-	let [owner, name] = repository.split('/', 2);
+	const [owner, name] = repository.split('/', 2);
 	if (!owner || !name) {
 		return;
 	}

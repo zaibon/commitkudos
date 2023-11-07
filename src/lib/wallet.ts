@@ -1,4 +1,3 @@
-import type { ethers } from 'ethers';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5/vue';
 import { derived, writable } from 'svelte/store';
 import { networks } from './networks';

@@ -28,7 +28,6 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
-	import logo from '$lib/logo.png';
 </script>
 
 <Toast position="tr" />

@@ -10,7 +10,7 @@ export async function listCommits(
 	if (since) {
 		url += `?since=${since}`;
 	}
-	let resp = await fetch(url, {
+	const resp = await fetch(url, {
 		headers: {
 			Authorization: `bearer ${env.GITHUB_TOKEN}`
 		}
