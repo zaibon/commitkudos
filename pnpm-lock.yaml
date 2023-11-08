@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@emailjs/browser':
-    specifier: ^3.11.0
-    version: 3.11.0
   '@floating-ui/dom':
     specifier: 1.5.3
     version: 1.5.3
@@ -23,6 +20,9 @@ dependencies:
   debounce:
     specifier: ^1.2.1
     version: 1.2.1
+  emailjs:
+    specifier: ^4.0.3
+    version: 4.0.3(typescript@5.2.2)
   ethers:
     specifier: 5.7.2
     version: 5.7.2
@@ -188,11 +188,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: false
-
-  /@emailjs/browser@3.11.0:
-    resolution: {integrity: sha512-RkY3FKZ3fPdK++OeF46mRTFpmmQWCHUVHZH209P3NE4D5sg2Atg7S2wa3gw5062Gl4clt4Wn5SyC4WhlVZC5pA==}
-    engines: {node: '>=14.0.0'}
     dev: false
 
   /@esbuild/android-arm64@0.18.20:
@@ -2409,6 +2404,18 @@ packages:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
+    dev: false
+
+  /emailjs@4.0.3(typescript@5.2.2):
+    resolution: {integrity: sha512-1CDXoE3FxkSg7QRTlLsDCYG9elFNu/JQsYWu3Xfrk77ubbg5zYgFGg+JRUKQJ56mceM8o3rHHX0VB4wo9XsyLQ==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      typescript: '>=4.3.5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.2.2
     dev: false
 
   /emoji-regex@8.0.0:

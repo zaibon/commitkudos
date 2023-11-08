@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { createLinks } from '$lib/peanutes';
-	import type { CommitDetail, Author, User } from '$lib/types';
+	import type { CommitDetail, Author, User, Email } from '$lib/types';
 	import { signer, chainId } from '$lib/wallet';
 	import pkg from 'debounce';
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import { sendMail } from '$lib/mail';
 
 	const toastStore = getToastStore();
 
@@ -38,7 +37,7 @@
 			message: 'Searching top contributors'
 		});
 
-		const resp = await fetch(`/?repository=${repository}&since=${since.toISOString()}`);
+		const resp = await fetch(`/api/github?repository=${repository}&since=${since.toISOString()}`);
 		if (resp.status != 200) {
 			toastStore.close(toastId);
 			return;
@@ -117,15 +116,27 @@
 			background: 'variant-filled-primary',
 			autohide: false
 		});
-		for (let i = 0; i < selectedContributors.length; i++) {
+		const promises = selectedContributors.map((contributor, i) => {
 			const link = links[i];
-			const user = selectedContributors[i];
-			if (!user) {
+			if (!contributor || !link) {
 				return;
 			}
-			console.log(user.name, user.email, repository, link.link);
-			await sendMail(user.name, user.email, repository, link.link);
-		}
+			const email: Email = {
+				name: contributor.name,
+				// email: contributor.email,
+				email: 'christophe.dcpm@gmail.com',
+				link: link.link,
+				message: '',
+				repoName: repository
+			};
+
+			console.log('send email:', { ...email });
+			return fetch(`/api/mail`, {
+				method: 'POST',
+				body: JSON.stringify(email)
+			});
+		});
+		await Promise.all(promises);
 		toastStore.close(toastId);
 	};
 </script>

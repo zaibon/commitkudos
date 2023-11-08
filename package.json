@@ -40,12 +40,12 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@emailjs/browser": "^3.11.0",
 		"@floating-ui/dom": "1.5.3",
 		"@squirrel-labs/peanut-sdk": "^0.3.4",
 		"@vercel/analytics": "^1.1.1",
 		"@web3modal/ethers5": "^3.2.0",
 		"debounce": "^1.2.1",
+		"emailjs": "^4.0.3",
 		"ethers": "5.7.2"
 	}
 }
