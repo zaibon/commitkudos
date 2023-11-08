@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { createLinks } from '$lib/peanutes';
-	import type { CommitDetail, Author, User, Email } from '$lib/types';
-	import { signer, chainId } from '$lib/wallet';
 	import pkg from 'debounce';
+	import type { Author, CommitDetail, Email, User } from '$lib/types';
+	import { useWeb3ModalAccount } from '$lib/wallet';
+
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 
+	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
 	const toastStore = getToastStore();
 
 	let creatingLinks = false;
@@ -74,6 +76,14 @@
 	}, 500);
 
 	const createLink = async () => {
+		if (!$isConnected || !$chainId) {
+			toastStore.trigger({
+				message: 'Connect your wallet before creating the links',
+				background: 'variant-filled-warning',
+				timeout: 2000
+			});
+			return;
+		}
 		if (!rewardAmount) {
 			toastStore.trigger({
 				message: 'Specifiy a reward amount before generating the links',
@@ -89,14 +99,11 @@
 			autohide: false
 		});
 		try {
-			links = await createLinks(
-				$signer.signer,
-				$chainId,
-				rewardAmount,
-				selectedContributors.length,
-				0
-			);
-			console.log(links);
+			const signer = getSigner();
+			if (signer) {
+				links = await createLinks(signer, $chainId, rewardAmount, selectedContributors.length, 0);
+				console.log(links);
+			}
 			toastStore.close(toastId);
 		} catch (error) {
 			console.log(error);

@@ -1,32 +1,21 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import { initializeStores } from '@skeletonlabs/skeleton';
-	import { initStores, openWalletModal, address, isConnected } from '$lib/wallet';
-	import { Toast } from '@skeletonlabs/skeleton';
-	import { dev } from '$app/environment';
+
+	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+	import { AppBar, AppShell, initializeStores, storePopup, Toast } from '@skeletonlabs/skeleton';
 	import { inject } from '@vercel/analytics';
 
+	import { dev } from '$app/environment';
+	import Web3Modal from '$lib/components/Web3Modal.svelte';
+	import { initWeb3Modal } from '$lib/wallet';
+
+	// sentry
 	inject({ mode: dev ? 'development' : 'production' });
 
 	initializeStores();
-
-	onMount(() => {
-		initStores();
-	});
-
-	function connect() {
-		if ($isConnected) {
-			openWalletModal({});
-		} else {
-			openWalletModal({ view: 'Networks' });
-		}
-	}
+	initWeb3Modal();
 
 	// Floating UI for Popups
-	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 </script>
 
@@ -41,13 +30,7 @@
 				<strong class="text-xl uppercase">CommitKudos</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
-				<button class="btn btn-sm variant-ghost-surface" on:click={connect}>
-					{#if $isConnected}
-						{$address}
-					{:else}
-						Connect
-					{/if}
-				</button>
+				<Web3Modal />
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
