@@ -31,3 +31,9 @@ To begin rewarding your contributors or to start earning rewards for your contri
 Whether you're a maintainer looking to give back to your team, or a developer eager to contribute to open-source projects and step into the world of Web3, CommitKudos is your gateway to a more rewarding open-source ecosystem.
 
 Together, let's build a future where open-source thrives and contributors are rewarded as they should be.
+
+## Badge
+
+Add a badge on your repository README file to encourage users to give some Kudos !
+
+[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fzaibon%2Fcommitkudos&query=%24.name&style=flat-square&label=Give%20some%20Kudos&cacheSeconds=3600)](https://commitkudos.com/?repository=zaibon%2Fcommitkudos&contributors=5&reward=5)
