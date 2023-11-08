@@ -1,7 +1,8 @@
 import { peanut } from '@squirrel-labs/peanut-sdk';
+import type { ethers } from 'ethers';
 
 export async function createLinks(
-	wallet,
+	wallet: ethers.providers.JSONProvider,
 	chainId: number,
 	amount: number,
 	numberOfLinks: number = 1,
