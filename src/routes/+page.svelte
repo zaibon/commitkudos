@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { createLinks } from '$lib/peanutes';
 	import pkg from 'debounce';
+
+	import { createLinks } from '$lib/peanutes';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
 	import { useWeb3ModalAccount } from '$lib/wallet';
 

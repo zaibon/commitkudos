@@ -1,6 +1,8 @@
-import type { RequestHandler } from './$types';
-import { listCommits } from '$lib/github';
 import { json } from '@sveltejs/kit';
+
+import { listCommits } from '$lib/github';
+
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const since = url.searchParams.get('since') ?? '';

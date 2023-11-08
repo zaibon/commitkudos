@@ -1,6 +1,8 @@
+import { type Message, SMTPClient } from 'emailjs';
+
 import { env } from '$env/dynamic/private';
+
 import type { Email } from './types';
-import { SMTPClient, type Message } from 'emailjs';
 
 const client = new SMTPClient({
 	user: env.SMTP_USER,
