@@ -70,3 +70,11 @@ export interface Parent {
 	url: string;
 	html_url: string;
 }
+
+export interface Email {
+	name: string;
+	email: string;
+	repoName: string;
+	message: string;
+	link: string;
+}
