@@ -9,8 +9,8 @@ dependencies:
     specifier: 1.5.3
     version: 1.5.3
   '@squirrel-labs/peanut-sdk':
-    specifier: ^0.3.4
-    version: 0.3.4
+    specifier: ^0.3.11
+    version: 0.3.11
   '@vercel/analytics':
     specifier: ^1.1.1
     version: 1.1.1
@@ -944,14 +944,12 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@squirrel-labs/peanut-sdk@0.3.4:
-    resolution: {integrity: sha512-HxrjUo7CU0PcI+hTBsf+PDpfQxDAUi3pvqwrPKU/3ieN4sEl7ztAeg/vRVUah1mbbwk1hqcw0J+d4M2gfUsISg==}
+  /@squirrel-labs/peanut-sdk@0.3.11:
+    resolution: {integrity: sha512-CLqE7zXETZeoKAjMkTYIPIV1lBPRz7Mdu5RXGxCBGsTjVPBVt7X5/kuwCZ0WbOvXFxAqFMI9DQZ5+Oj5SGuqoQ==}
     dependencies:
       ethersv5: /ethers@5.7.2
-      isomorphic-fetch: 3.0.0
     transitivePeerDependencies:
       - bufferutil
-      - encoding
       - utf-8-validate
     dev: false
 
@@ -3158,15 +3156,6 @@ packages:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
     dev: true
 
-  /isomorphic-fetch@3.0.0:
-    resolution: {integrity: sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA==}
-    dependencies:
-      node-fetch: 2.7.0
-      whatwg-fetch: 3.6.19
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
   /isomorphic-ws@4.0.1(ws@7.5.9):
     resolution: {integrity: sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==}
     peerDependencies:
@@ -4701,10 +4690,6 @@ packages:
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
-
-  /whatwg-fetch@3.6.19:
-    resolution: {integrity: sha512-d67JP4dHSbm2TrpFj8AbO8DnL1JXL5J9u0Kq2xW6d0TFDbCA3Muhdt8orXC22utleTVj7Prqt82baN6RBvnEgw==}
-    dev: false
 
   /whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
