@@ -3,12 +3,13 @@
 
 	import { createLinks } from '$lib/peanutes';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { useWeb3ModalAccount } from '$lib/wallet';
+	import { useWeb3Modal, useWeb3ModalAccount } from '$lib/wallet';
 
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 
 	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
+	const { open } = useWeb3Modal();
 	const toastStore = getToastStore();
 
 	let creatingLinks = false;
@@ -78,13 +79,10 @@
 
 	const createLink = async () => {
 		if (!$isConnected || !$chainId) {
-			toastStore.trigger({
-				message: 'Connect your wallet before creating the links',
-				background: 'variant-filled-warning',
-				timeout: 2000
-			});
+			await open();
 			return;
 		}
+
 		if (!rewardAmount) {
 			toastStore.trigger({
 				message: 'Specifiy a reward amount before generating the links',
@@ -157,7 +155,7 @@
 				<div class="input-group-shim">https://github.com/</div>
 				<input
 					bind:value={repository}
-					on:change={topContributors}
+					on:input={topContributors}
 					type="text"
 					id="repository"
 					placeholder="owner/name"
@@ -165,7 +163,7 @@
 			</div>
 			<input
 				bind:value={contributorsNr}
-				on:change={topContributors}
+				on:input={topContributors}
 				class="input my-2"
 				type="number"
 				step="1"
@@ -220,7 +218,9 @@
 						class="btn variant-filled-primary w-full mr-1"
 						type="submit"
 					>
-						{#if !creatingLinks}
+						{#if !$isConnected}
+							Connect wallet
+						{:else if !creatingLinks}
 							Reward
 						{:else}
 							In progress ...
