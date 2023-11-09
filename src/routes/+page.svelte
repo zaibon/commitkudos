@@ -3,22 +3,25 @@
 
 	import { createLinks } from '$lib/peanutes';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { useWeb3Modal, useWeb3ModalAccount } from '$lib/wallet';
+	import { getAccountStores, open } from '$lib/wallet';
 
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
+	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 
-	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
-	const { open } = useWeb3Modal();
+	import Balance from '$lib/components/Balance.svelte';
+
+	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
 
 	let creatingLinks = false;
 
 	let repository: string = '';
-	let contributorsNr: number | undefined = undefined;
-	let rewardAmount: number | undefined = undefined;
+	let contributorsNr: number | undefined;
+	let rewardAmount: number | undefined;
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
+	let selectedToken: BalanceResult;
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
@@ -100,8 +103,13 @@
 		try {
 			const signer = getSigner();
 			if (signer) {
-				links = await createLinks(signer, $chainId, rewardAmount, selectedContributors.length, 0);
-				console.log(links);
+				links = await createLinks(
+					signer,
+					$chainId,
+					rewardAmount,
+					selectedContributors.length,
+					selectedToken.address
+				);
 			}
 			toastStore.close(toastId);
 		} catch (error) {
@@ -171,14 +179,17 @@
 				placeholder="Number of contributors to reward"
 			/>
 			{#if top.length > 0}
-				<input
-					bind:value={rewardAmount}
-					class="input mb-2"
-					type="number"
-					step="any"
-					min="0"
-					placeholder="reward amount"
-				/>
+				<div class="flex flex-row row mb-2">
+					<input
+						bind:value={rewardAmount}
+						class="input"
+						type="number"
+						step="any"
+						min="0"
+						placeholder="reward amount"
+					/>
+					<Balance class="select" bind:token={selectedToken} />
+				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>
 					{#if top}
