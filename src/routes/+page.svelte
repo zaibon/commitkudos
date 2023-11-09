@@ -4,9 +4,10 @@
 	import { createLinks } from '$lib/peanutes';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
 	import { useWeb3ModalAccount } from '$lib/wallet';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+	import InputNumber from '$lib/components/InputNumber.svelte';
 
 	const { debounce } = pkg;
-	import { getToastStore } from '@skeletonlabs/skeleton';
 
 	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
 	const toastStore = getToastStore();
@@ -150,9 +151,9 @@
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-10 text-center flex flex-col items-center">
+	<div class="space-y-10 text-center flex flex-col items-center md:min-w-[600px]">
 		<h2 class="h2">Find your top contributors</h2>
-		<form class="w-full">
+		<form class="w-full flex flex-col gap-y-1">
 			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">https://github.com/</div>
 				<input
@@ -163,24 +164,9 @@
 					placeholder="owner/name"
 				/>
 			</div>
-			<input
-				bind:value={contributorsNr}
-				on:change={topContributors}
-				class="input my-2"
-				type="number"
-				step="1"
-				min="1"
-				placeholder="Number of contributors to reward"
-			/>
-			{#if top.length > 0}
-				<input
-					bind:value={rewardAmount}
-					class="input mb-2"
-					type="number"
-					step="any"
-					min="0"
-					placeholder="reward amount"
-				/>
+			<InputNumber bind:value={contributorsNr} placeholder="Number of contributors" min={0} />
+			{#if true || top.length > 0}
+				<InputNumber bind:value={rewardAmount} placeholder="Reward amount" min={0} />
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>
 					{#if top}

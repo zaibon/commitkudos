@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { shortenWalletAddress } from '$lib/strings';
 	import { useWeb3Modal, useWeb3ModalAccount } from '$lib/wallet';
 
 	const { open } = useWeb3Modal();
@@ -11,11 +12,12 @@
 			open({ view: 'Networks' });
 		}
 	}
+	$: addr = shortenWalletAddress($address ?? '');
 </script>
 
 <button class="btn btn-sm variant-ghost-surface" on:click={connect}>
 	{#if $isConnected}
-		{$address}
+		{addr}
 	{:else}
 		Connect
 	{/if}
