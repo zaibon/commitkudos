@@ -157,7 +157,7 @@
 				<div class="input-group-shim">https://github.com/</div>
 				<input
 					bind:value={repository}
-					on:change={topContributors}
+					on:input={topContributors}
 					type="text"
 					id="repository"
 					placeholder="owner/name"
@@ -165,7 +165,7 @@
 			</div>
 			<input
 				bind:value={contributorsNr}
-				on:change={topContributors}
+				on:input={topContributors}
 				class="input my-2"
 				type="number"
 				step="1"
