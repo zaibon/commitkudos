@@ -8,6 +8,9 @@
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 
+	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
+
 	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
 	const { open } = useWeb3Modal();
 	const toastStore = getToastStore();
@@ -21,6 +24,21 @@
 	let selectedContributors: Author[] = [];
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
+
+	let greetings = ['Find', 'Reward', 'Support'];
+	let index = 0;
+	let rol: NodeJS.Timeout;
+
+	onMount(() => {
+		rol = setInterval(() => {
+			if (index === greetings.length - 1) index = 0;
+			else index++;
+		}, 1250);
+	});
+
+	onDestroy(() => {
+		clearInterval(rol);
+	});
 
 	const topContributors = debounce(async () => {
 		selectedContributors = [];
@@ -149,7 +167,9 @@
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2">Find your top contributors</h2>
+		<h2 style="display: inline">
+			<bold transition:slide>{greetings[index]}</bold> your top contributors
+		</h2>
 		<form class="w-full">
 			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">https://github.com/</div>
