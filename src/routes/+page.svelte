@@ -9,8 +9,8 @@
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 
+	import { page } from '$app/stores';
 	import Balance from '$lib/components/Balance.svelte';
 
 	const { isConnected, chainId, getSigner } = getAccountStores();

@@ -122,3 +122,17 @@ export interface Explorer {
 	standard: string;
 	icon?: string;
 }
+
+export type BadgeStyle = 'flat' | 'flat-square' | 'plastic' | 'for-the-badge' | 'social';
+
+export interface Badge {
+	badgeContent: string;
+	style?: BadgeStyle;
+	logo?: string;
+	logoColor?: string;
+	label?: string;
+	labelColor?: string;
+	color?: string;
+	cacheSeconds?: number;
+	link?: string;
+}
