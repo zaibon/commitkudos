@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { chains } from '$lib/consts/chains';
 	import { shortAddress } from '$lib/strings';
-	import { getAccountStores,open } from '$lib/wallet';
+	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, address, chainId } = getAccountStores();
 	$: network = chains.find((c) => $chainId == c.id);
@@ -12,7 +12,7 @@
 </script>
 
 <span>
-	{network?.name}
+	{network?.name ?? ''}
 </span>
 <button class="btn btn-sm variant-ghost-surface" on:click={connect}>
 	{#if $isConnected}
