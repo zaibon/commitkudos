@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 
+	import { getAccountStores, open } from '$lib/services/wallet';
 	import { shortAddress } from '$lib/strings';
-	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, address, chainId } = getAccountStores();
 	$: network = CHAIN_DETAILS[$chainId];

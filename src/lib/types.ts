@@ -65,6 +65,17 @@ export interface User {
 	site_admin: boolean;
 }
 
+export interface Contributor {
+	login: string;
+	name: string;
+	avatarUrl: string;
+	email: string;
+	twitter?: string;
+	discord?: string;
+	checked: boolean;
+	numberOfContributions: number;
+}
+
 export interface Parent {
 	sha: string;
 	url: string;

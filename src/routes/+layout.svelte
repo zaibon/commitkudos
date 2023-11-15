@@ -2,12 +2,12 @@
 	import '../app.postcss';
 
 	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
-	import { AppBar, AppShell, initializeStores, storePopup, Toast } from '@skeletonlabs/skeleton';
-	import { inject } from '@vercel/analytics';
+	import { AppBar, AppShell, initializeStores, LightSwitch,storePopup, Toast  } from '@skeletonlabs/skeleton';
+		import { inject } from '@vercel/analytics';
 
 	import { dev } from '$app/environment';
 	import Web3Modal from '$lib/components/Web3Modal.svelte';
-	import { initWeb3Modal } from '$lib/wallet';
+	import { initWeb3Modal } from '$lib/services/wallet';
 
 	// sentry
 	inject({ mode: dev ? 'development' : 'production' });
@@ -33,6 +33,7 @@
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<Web3Modal />
+				<LightSwitch />
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>

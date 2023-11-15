@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { createLinks } from '$lib/services/peanutes';
+	import { getAccountStores, open } from '$lib/services/wallet';
+	import type { Author, CommitDetail, Email, User } from '$lib/types';
+
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import debounce from 'just-debounce';
@@ -6,9 +10,6 @@
 
 	import { page } from '$app/stores';
 	import Balance from '$lib/components/Balance.svelte';
-	import { createLinks } from '$lib/peanutes';
-	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
