@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { chains } from '$lib/consts/chains';
+	import { getAccountStores, open } from '$lib/services/wallet';
 	import { shortAddress } from '$lib/strings';
-	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, address, chainId } = getAccountStores();
 	$: network = chains.find((c) => $chainId == c.id);

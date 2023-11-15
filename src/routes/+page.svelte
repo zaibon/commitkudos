@@ -1,9 +1,9 @@
 <script lang="ts">
 	import pkg from 'debounce';
 
-	import { createLinks } from '$lib/peanutes';
+	import { createLinks } from '$lib/services/peanutes';
+	import { getAccountStores, open } from '$lib/services/wallet';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { getAccountStores, open } from '$lib/wallet';
 
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';

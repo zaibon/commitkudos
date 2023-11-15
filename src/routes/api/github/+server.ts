@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 
-import { listCommits } from '$lib/github';
+import { listCommits } from '$lib/services/github';
 
 import type { RequestHandler } from './$types';
 
@@ -17,5 +17,6 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 
 	const commits = await listCommits(owner, name, since);
+
 	return json(commits);
 };

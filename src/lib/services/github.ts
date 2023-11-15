@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 
-import type { CommitDetail } from './types';
+import type { CommitDetail } from '../types';
 
 export async function listCommits(
 	owner: string,

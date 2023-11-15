@@ -1,12 +1,14 @@
 <script lang="ts">
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 
-	import { balances } from '$lib/socketTech';
+	import { balances } from '$lib/services/socketTech';
 
 	export let token: BalanceResult;
 	let selected: BalanceResult;
 
-	$: sortedBalance = $balances.sort((a, b) => (a.symbol < b.symbol ? -1 : 1));
+	$: sortedBalance = $balances.sort((a: BalanceResult, b: BalanceResult) =>
+		a.symbol < b.symbol ? -1 : 1
+	);
 	// set the first balance as selected once the balances is loaded
 	$: if (sortedBalance.length > 0 && !selected) {
 		selected = sortedBalance[0];
