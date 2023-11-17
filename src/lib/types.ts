@@ -78,3 +78,47 @@ export interface Email {
 	message: string;
 	link: string;
 }
+
+export interface PeanutChain {
+	name: string;
+	chain: string;
+	icon: Icon;
+	rpc: string[];
+	features: Feature[];
+	faucets: string[];
+	nativeCurrency: NativeCurrency;
+	infoURL: string;
+	shortName: string;
+	chainId: number;
+	networkId: number;
+	slip44: number;
+	ens: Ens;
+	explorers: Explorer[];
+	mainnet: boolean;
+}
+
+export interface Icon {
+	url: string;
+	format: string;
+}
+
+export interface Feature {
+	name: string;
+}
+
+export interface NativeCurrency {
+	name: string;
+	symbol: string;
+	decimals: number;
+}
+
+export interface Ens {
+	registry: string;
+}
+
+export interface Explorer {
+	name: string;
+	url: string;
+	standard: string;
+	icon?: string;
+}

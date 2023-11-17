@@ -1,21 +1,23 @@
 <script lang="ts">
-	import { useWeb3Modal, useWeb3ModalAccount } from '$lib/wallet';
+	import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 
-	const { open } = useWeb3Modal();
-	const { isConnected, address } = useWeb3ModalAccount();
+	import { shortAddress } from '$lib/strings';
+	import { getAccountStores, open } from '$lib/wallet';
+
+	const { isConnected, address, chainId } = getAccountStores();
+	$: network = CHAIN_DETAILS[$chainId];
 
 	async function connect() {
-		if ($isConnected) {
-			open();
-		} else {
-			open({ view: 'Networks' });
-		}
+		open();
 	}
 </script>
 
+<span>
+	{network?.name ?? ''}
+</span>
 <button class="btn btn-sm variant-ghost-surface" on:click={connect}>
 	{#if $isConnected}
-		{$address}
+		{shortAddress($address)}
 	{:else}
 		Connect
 	{/if}

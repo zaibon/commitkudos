@@ -1,94 +1,92 @@
+// import { chains } from '$lib/consts/chains';
+import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
 import type { Web3Modal } from '@web3modal/ethers5/dist/types/src/client';
 import type { ethers } from 'ethers';
 import { writable } from 'svelte/store';
 
-import { networks } from './networks';
-
-let modal: Web3Modal | null = null;
+import type { PeanutChain } from './types';
 
 export interface OpenOptions {
 	view: 'Account' | 'Connect' | 'Networks';
 }
 
+let modal: Web3Modal | null = null;
+
+export const getAccountStores = () => accountStores;
+
+export const accountStores = {
+	provider: writable<ethers.providers.Web3Provider | undefined>(undefined),
+	providerType: writable<'walletConnect' | 'injected' | 'coinbaseWallet' | 'eip6963' | undefined>(
+		undefined
+	),
+	address: writable<string | undefined>(undefined),
+	chainId: writable<number | undefined>(undefined),
+	isConnected: writable<boolean>(false),
+	getSigner
+};
+
+export const modalSateStores = {
+	selectedNetworkId: writable<number | undefined>(undefined),
+	isOpen: writable<boolean>(false)
+};
+
 export function initWeb3Modal() {
 	const projectId = 'f71066d156ed5402df3e3e516de81a96';
 
 	const metadata = {
-		name: 'My Website',
-		description: 'My Website description',
-		url: 'https://mywebsite.com',
-		icons: ['https://avatars.mywebsite.com/']
+		name: 'CommitKudos',
+		description: `Empowering Open-Source Collaboration with Web3 Rewards, CommitKudos is a designed to celebrate and support the open-source community.`,
+		url: 'https://commitkudos.com',
+		icons: ['https://commitkudos.com/favicon-32x32.png']
 	};
 
 	modal = createWeb3Modal({
 		ethersConfig: defaultConfig({ metadata }),
-		chains: [networks.gnosisTestnet, networks.sepolia],
+		chains: (Object.values(CHAIN_DETAILS) as PeanutChain[]).map((chain: PeanutChain) => {
+			return {
+				rpcUrl: chain.rpc[0],
+				explorerUrl: chain.explorers[0].url,
+				currency: chain.nativeCurrency.symbol.toString(),
+				name: chain.name,
+				chainId: chain.chainId
+			};
+		}),
 		projectId
 	});
-}
-
-export function useWeb3Modal() {
-	if (!modal) {
-		throw new Error('Please call "createWeb3Modal" before using "useWeb3Modal" hook');
-	}
-
-	async function open(options?: OpenOptions) {
-		await modal?.open(options);
-	}
-
-	async function close() {
-		await modal?.close();
-	}
-
-	return { open, close };
-}
-
-export function useWeb3ModalState() {
-	if (!modal) {
-		throw new Error('Please call "createWeb3Modal" before using "useWeb3ModalState" hook');
-	}
-
-	const state = modal.getState();
-	const stores = {
-		selectedNetworkId: writable<number | undefined>(state.selectedNetworkId),
-		isOpen: writable<boolean>(state.open)
-	};
-
-	//TODO: unsubscribe
-	modal?.subscribeState((newState) => {
-		stores.selectedNetworkId.set(newState.selectedNetworkId);
-		stores.isOpen.set(newState.open);
-	});
-
-	return stores;
-}
-
-export function useWeb3ModalAccount() {
-	const stores = {
-		provider: writable<ethers.providers.Web3Provider | undefined>(undefined),
-		providerType: writable<'walletConnect' | 'injected' | 'coinbaseWallet' | 'eip6963' | undefined>(
-			undefined
-		),
-		address: writable<string | undefined>(undefined),
-		chainId: writable<number | undefined>(undefined),
-		isConnected: writable<boolean>(false)
-	};
 
 	//TODO: unsubribe
 	modal?.subscribeProvider((newState) => {
-		stores.provider.set(newState.provider);
-		stores.providerType.set(newState.providerType);
-		stores.address.set(newState.address);
-		stores.chainId.set(newState.chainId);
-		stores.isConnected.set(newState.isConnected);
+		accountStores.provider.set(newState.provider);
+		accountStores.providerType.set(newState.providerType);
+		accountStores.address.set(newState.address);
+		accountStores.chainId.set(newState.chainId);
+		accountStores.isConnected.set(newState.isConnected);
 	});
 
-	function getSigner(): ethers.providers.JsonRpcSigner | undefined {
-		if (modal) {
-			return modal.getSigner();
-		}
-	}
+	//TODO: unsubribe
+	modal?.subscribeState((newState) => {
+		modalSateStores.selectedNetworkId.set(newState.selectedNetworkId);
+		modalSateStores.isOpen.set(newState.open);
+	});
+}
 
-	return { ...stores, getSigner };
+function getSigner(): ethers.providers.JsonRpcSigner | undefined {
+	if (modal) {
+		return modal.getSigner();
+	}
+}
+
+export async function open(options?: OpenOptions) {
+	if (!modal) {
+		throw new Error('Please call "createWeb3Modal" before using "useWeb3Modal" hook');
+	}
+	await modal?.open(options);
+}
+
+export async function close() {
+	if (!modal) {
+		throw new Error('Please call "createWeb3Modal" before using "useWeb3Modal" hook');
+	}
+	await modal?.close();
 }
