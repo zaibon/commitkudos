@@ -8,22 +8,33 @@
 	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { onMount } from 'svelte';
 
+	import { page } from '$app/stores';
 	import Balance from '$lib/components/Balance.svelte';
 
 	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
 
-	let creatingLinks = false;
+	// export let data: PageData;
+	let repository: string | null = $page.url.searchParams.get('repository');
+	let contributorsNr: number | null = $page.url.searchParams.has('contributor')
+		? parseInt($page.url.searchParams.get('contributor') ?? '0')
+		: null;
+	let rewardAmount: number | null = $page.url.searchParams.has('reward')
+		? parseFloat($page.url.searchParams.get('reward') ?? '0')
+		: null;
 
-	let repository: string = '';
-	let contributorsNr: number | undefined;
-	let rewardAmount: number | undefined;
+	let creatingLinks = false;
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
 	let selectedToken: BalanceResult;
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
+
+	onMount(() => {
+		topContributors();
+	});
 
 	const topContributors = debounce(async () => {
 		selectedContributors = [];
@@ -132,7 +143,7 @@
 		});
 		const promises = selectedContributors.map((contributor, i) => {
 			const link = links[i];
-			if (!contributor || !link) {
+			if (!repository || !contributor || !link) {
 				return;
 			}
 			const email: Email = {
