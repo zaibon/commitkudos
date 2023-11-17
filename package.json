@@ -52,5 +52,11 @@
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
 		"wagmi": "^1.4.6"
+	},
+	"pnpm": {
+		"overrides": {
+			"@socket.tech/ll-core": "^0.1.49",
+			"@socket.tech/ll-core-v2": "^0.0.68"
+		}
 	}
 }
