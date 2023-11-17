@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { chains } from '$lib/consts/chains';
+	import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
+
 	import { shortAddress } from '$lib/strings';
 	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, address, chainId } = getAccountStores();
-	$: network = chains.find((c) => $chainId == c.id);
+	$: network = CHAIN_DETAILS[$chainId];
 
 	async function connect() {
 		open();

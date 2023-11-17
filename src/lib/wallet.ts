@@ -1,9 +1,11 @@
+// import { chains } from '$lib/consts/chains';
+import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
 import type { Web3Modal } from '@web3modal/ethers5/dist/types/src/client';
 import type { ethers } from 'ethers';
 import { writable } from 'svelte/store';
 
-import { chains } from '$lib/consts/chains';
+import type { PeanutChain } from './types';
 
 export interface OpenOptions {
 	view: 'Account' | 'Connect' | 'Networks';
@@ -41,13 +43,13 @@ export function initWeb3Modal() {
 
 	modal = createWeb3Modal({
 		ethersConfig: defaultConfig({ metadata }),
-		chains: chains.map((chain) => {
+		chains: (Object.values(CHAIN_DETAILS) as PeanutChain[]).map((chain: PeanutChain) => {
 			return {
-				rpcUrl: chain.rpcUrls.public.http.toString(),
-				explorerUrl: chain.blockExplorers.default.url.toString(),
+				rpcUrl: chain.rpc[0],
+				explorerUrl: chain.explorers[0].url,
 				currency: chain.nativeCurrency.symbol.toString(),
-				name: chain.name.toString(),
-				chainId: chain.id
+				name: chain.name,
+				chainId: chain.chainId
 			};
 		}),
 		projectId
