@@ -5,7 +5,7 @@ import type { Web3Modal } from '@web3modal/ethers5/dist/types/src/client';
 import type { ethers } from 'ethers';
 import { writable } from 'svelte/store';
 
-import type { PeanutChain } from './types';
+import type { PeanutChain } from '../types';
 
 export interface OpenOptions {
 	view: 'Account' | 'Connect' | 'Networks';

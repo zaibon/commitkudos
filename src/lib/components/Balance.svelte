@@ -4,6 +4,7 @@
 	import { balances } from '$lib/services/socketTech';
 
 	export let token: BalanceResult;
+	export let alternative: boolean = false;
 	let selected: BalanceResult;
 
 	$: sortedBalance = $balances.sort((a: BalanceResult, b: BalanceResult) =>
@@ -16,7 +17,13 @@
 	}
 </script>
 
-<select class={$$props.class} bind:value={selected} on:change={() => (token = selected)}>
+<select
+	class={$$props.class}
+	class:variant-filled-surface={!alternative}
+	class:variant-filled={alternative}
+	bind:value={selected}
+	on:change={() => (token = selected)}
+>
 	{#each sortedBalance as balance}
 		<option value={balance}>{balance.symbol}</option>
 	{/each}

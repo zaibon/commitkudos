@@ -2,8 +2,15 @@
 	import '../app.postcss';
 
 	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
-	import { AppBar, AppShell, initializeStores, LightSwitch,storePopup, Toast  } from '@skeletonlabs/skeleton';
-		import { inject } from '@vercel/analytics';
+	import {
+		AppBar,
+		AppShell,
+		initializeStores,
+		LightSwitch,
+		storePopup,
+		Toast
+	} from '@skeletonlabs/skeleton';
+	import { inject } from '@vercel/analytics';
 
 	import { dev } from '$app/environment';
 	import Web3Modal from '$lib/components/Web3Modal.svelte';

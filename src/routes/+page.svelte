@@ -122,7 +122,6 @@
 			}
 			toastStore.close(toastId);
 		} catch (error) {
-			console.log(error);
 			toastStore.trigger({
 				message: 'failed to generate rewards',
 				background: 'variant-filled-warning'

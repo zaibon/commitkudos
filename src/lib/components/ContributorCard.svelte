@@ -1,23 +1,36 @@
 <script lang="ts">
+	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+
 	import type { Contributor } from '$lib/types';
+
+	import Balance from './Balance.svelte';
 
 	export let contributor: Contributor;
 	export let selected: boolean = false;
 	export let tabindex = 0;
+	export let reward: boolean = false;
+	let selectedToken: BalanceResult;
 	function onKeyPress() {}
 </script>
 
 <div
-	class="card variant-filled"
+	class="card card-hover"
 	class:variant-filled={!selected}
 	class:variant-filled-surface={selected}
-	on:click={() => (selected = !selected)}
-	on:keypress={onKeyPress}
-	{tabindex}
-	role="button"
 >
+	<header class="card-header flex">
+		<a href="https://github.com/{contributor?.login}">
+			<h3 class="hover:underline">@{contributor?.login}</h3>
+		</a>
+	</header>
 	<section class="p-4">
-		<div class="flex flex-row justify-between gap-3">
+		<div
+			class="flex flex-row justify-between gap-3"
+			role="button"
+			on:click={() => (selected = !selected)}
+			on:keypress={onKeyPress}
+			{tabindex}
+		>
 			<figure class="avatar flex aspect-square overflow-hidden h-12 lg:h-32 rounded">
 				<img
 					class="avatar-image w-full h-full object-cover"
@@ -25,13 +38,30 @@
 					alt="avatar"
 				/>
 			</figure>
-			<div class="flex flex-col">
-				<span class="mr-2">Name: {contributor?.name}</span>
-				<span class="mr-2">Email: {contributor?.email}</span>
+			<div class="flex flex-col justify-start">
+				<p>Name: <span class="font-semibold">{contributor?.name}</span></p>
+				<p>Email: {contributor?.email}</p>
 				<!-- <span class="mr-2">Twitter: {contributor?.twitter}</span>
 				<span class="mr-2">Discord: {contributor?.discord}</span> -->
 			</div>
 		</div>
+		{#if reward}
+			<div class="mt-3 flex flex-row justify-end gap-x-1">
+				<input
+					class="input rounded-sm"
+					class:variant-filled-surface={!selected}
+					class:variant-filled={selected}
+					type="text"
+					inputmode="numeric"
+					placeholder="Amount"
+				/>
+				<Balance
+					class="select h-1/2 mt-auto rounded-sm"
+					alternative={selected}
+					bind:token={selectedToken}
+				/>
+			</div>
+		{/if}
 	</section>
 	<footer class="card-footer border-t border-black p-2">
 		<p>

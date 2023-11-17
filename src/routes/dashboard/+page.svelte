@@ -6,6 +6,19 @@
 	import { loadContributors } from '$lib/pages/dasboard/lib';
 	import type { Contributor } from '$lib/types';
 
+	import type { Snapshot } from './$types';
+
+	export const snapshot: Snapshot<string> = {
+		capture: () => JSON.stringify({ repository, contributors, selectAll, multiReward }),
+		restore: (value) => {
+			let data = JSON.parse(value);
+			repository = data.repository;
+			contributors = data.contributors;
+			selectAll = data.selectAll;
+			multiReward = data.multiReward;
+		}
+	};
+
 	const { debounce } = pkg;
 
 	let repository: string = '';
@@ -44,7 +57,13 @@
 			</div>
 		</form>
 		<div class="flex flex-col w-fit mt-2 gap-2">
-			<button class="btn variant-filled" on:click={toggleSelectAll}>Select all</button>
+			<button class="btn variant-filled" on:click={toggleSelectAll}>
+				{#if selectAll}
+					Unselect all
+				{:else}
+					Select all
+				{/if}
+			</button>
 			<SlideToggle name="multiReward" bind:checked={multiReward}>Multi rewards</SlideToggle>
 			{#if selected.length > 0}
 				<button class="btn variant-filled-primary" on:click={reward}>Generate reward</button>
@@ -55,7 +74,7 @@
 		<h1>Contributors</h1>
 		<div class="grid md:grid-cols-1 lg:grid-cols-2 gap-3">
 			{#each contributors as contributor}
-				<ContributorCard bind:selected={contributor.checked} {contributor} />
+				<ContributorCard bind:selected={contributor.checked} {contributor} reward={multiReward} />
 			{/each}
 		</div>
 	</section>
