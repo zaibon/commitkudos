@@ -4,13 +4,17 @@
 	import type { Contributor } from '$lib/types';
 
 	import Balance from './Balance.svelte';
+	import { createEventDispatcher } from 'svelte';
 
+	const dispatch = createEventDispatcher();
 	export let contributor: Contributor;
 	export let selected: boolean = false;
 	export let tabindex = 0;
 	export let reward: boolean = false;
 	let selectedToken: BalanceResult;
-	function onKeyPress() {}
+	function onKeyPress() {
+		dispatch('selected', selected);
+	}
 </script>
 
 <div

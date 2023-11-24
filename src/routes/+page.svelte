@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { createLinks } from '$lib/services/peanutes';
+	import { createLinks } from '$lib/services/peanut';
+
 	import { getAccountStores, open } from '$lib/services/wallet';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
 
@@ -112,13 +113,13 @@
 		try {
 			const signer = getSigner();
 			if (signer) {
-				links = await createLinks(
-					signer,
-					$chainId,
-					rewardAmount,
-					selectedContributors.length,
-					selectedToken.address
-				);
+				links = await createLinks({
+					wallet: signer,
+					chainId: $chainId,
+					amount: rewardAmount,
+					numberOfLinks: selectedContributors.length,
+					tokenAddress: selectedToken.address
+				});
 			}
 			toastStore.close(toastId);
 		} catch (error) {
