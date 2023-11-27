@@ -1,17 +1,14 @@
 <script lang="ts">
-	import pkg from 'debounce';
-
-	import { createLinks } from '$lib/peanutes';
-	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { getAccountStores, open } from '$lib/wallet';
-
-	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import debounce from 'just-debounce';
 	import { onMount } from 'svelte';
 
 	import { page } from '$app/stores';
 	import Balance from '$lib/components/Balance.svelte';
+	import { createLinks } from '$lib/peanutes';
+	import type { Author, CommitDetail, Email, User } from '$lib/types';
+	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
