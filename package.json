@@ -48,7 +48,7 @@
 		"@squirrel-labs/peanut-sdk": "^0.3.29",
 		"@vercel/analytics": "^1.1.1",
 		"@web3modal/ethers5": "^3.3.2",
-		"debounce": "^1.2.1",
+		"debounce": "^2.0.0",
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
 		"wagmi": "^1.4.7"
