@@ -167,10 +167,12 @@
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2" style="display: inline">
-			<bold transition:slide>{greetings[index]}</bold> your top contributors
+		<h2 class="h2">
+			<div style="display: inline">
+				<bold transition:slide>{greetings[index]}</bold> your top contributors
+			</div>
 		</h2>
-		<form class="w-full">
+		<form>
 			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">https://github.com/</div>
 				<input
