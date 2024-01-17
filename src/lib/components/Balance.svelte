@@ -19,8 +19,8 @@
 
 <select
 	class={$$props.class}
-	class:variant-filled-surface={!alternative}
-	class:variant-filled={alternative}
+	class:variant-filled={!alternative}
+	class:variant-filled-surface={alternative}
 	bind:value={selected}
 	on:change={() => (token = selected)}
 >

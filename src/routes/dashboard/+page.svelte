@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { SlideToggle } from '@skeletonlabs/skeleton';
-	import pkg from 'debounce';
+	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import debounce from 'just-debounce';
 
+	import Balance from '$lib/components/Balance.svelte';
 	import ContributorCard from '$lib/components/ContributorCard.svelte';
-	import { loadContributors } from '$lib/pages/dasboard/lib';
+	import { loadContributors } from '$lib/pages/dashboard/lib';
+	import { sendReward } from '$lib/services/reward';
+	import { getAccountStores } from '$lib/services/wallet';
 	import type { Contributor } from '$lib/types';
 
 	import type { Snapshot } from './$types';
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
-	import Balance from '$lib/components/Balance.svelte';
-	import { getAccountStores } from '$lib/services/wallet';
-	import { sendReward } from '$lib/services/reward';
 
 	export const snapshot: Snapshot<string> = {
 		capture: () => JSON.stringify({ repository, contributors, selectAll, multiReward }),
@@ -23,11 +23,61 @@
 		}
 	};
 
-	const { debounce } = pkg;
 	const { getSigner, chainId } = getAccountStores();
 
-	let repository: string = '';
-	let contributors: Contributor[] = [];
+	let repository: string = 'zaibon/commitkudos';
+	let contributors: Contributor[] = [
+		{
+			login: 'zaibon',
+			name: 'christophe de Carvalho',
+			avatarUrl: '/android-chrome-192x192.png',
+			email: 'user@mail.com',
+			twitter: '',
+			discord: '',
+			checked: false,
+			numberOfContributions: 10
+		},
+		{
+			login: 'zaibon',
+			name: 'christophe de Carvalho',
+			avatarUrl: '/android-chrome-192x192.png',
+			email: 'user@mail.com',
+			twitter: '',
+			discord: '',
+			checked: false,
+			numberOfContributions: 10
+		},
+		{
+			login: 'zaibon',
+			name: 'christophe de Carvalho',
+			avatarUrl: '/android-chrome-192x192.png',
+			email: 'user@mail.com',
+			twitter: '',
+			discord: '',
+			checked: false,
+			numberOfContributions: 10
+		},
+		{
+			login: 'zaibon',
+			name: 'christophe de Carvalho',
+			avatarUrl: '/android-chrome-192x192.png',
+			email: 'user@mail.com',
+			twitter: '',
+			discord: '',
+			checked: false,
+			numberOfContributions: 10
+		},
+		{
+			login: 'zaibon',
+			name: 'christophe de Carvalho',
+			avatarUrl: '/android-chrome-192x192.png',
+			email: 'user@mail.com',
+			twitter: '',
+			discord: '',
+			checked: false,
+			numberOfContributions: 10
+		}
+	];
 	let selectAll: boolean = false;
 	let multiReward: boolean = false;
 	let selectedToken: BalanceResult;
@@ -83,7 +133,7 @@
 				/>
 			</div>
 		</form>
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-2 min-height-[500px]">
 			<div class="flex flex-row w-fit mt-2 gap-2">
 				<SlideToggle
 					name="selectAll"
@@ -118,6 +168,14 @@
 					disabled={selected.length === 0}>Generate reward</button
 				>
 			{/if}
+		</div>
+		<div class="flex flex-col gap-2">
+			<h3 class="h3 text-center underline font-small">selected contributors</h3>
+			<ul>
+				{#each selected as c}
+					<li>{c.login}</li>
+				{/each}
+			</ul>
 		</div>
 	</section>
 	<section class="w-full">

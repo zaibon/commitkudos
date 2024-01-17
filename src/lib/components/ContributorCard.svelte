@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { createEventDispatcher } from 'svelte';
 
 	import type { Contributor } from '$lib/types';
 
 	import Balance from './Balance.svelte';
-	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 	export let contributor: Contributor;
@@ -53,8 +53,8 @@
 			<div class="mt-3 flex flex-row justify-end gap-x-1">
 				<input
 					class="input rounded-sm"
-					class:variant-filled-surface={!selected}
-					class:variant-filled={selected}
+					class:variant-filled={!selected}
+					class:variant-filled-surface={selected}
 					type="text"
 					inputmode="numeric"
 					placeholder="Amount"

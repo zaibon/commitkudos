@@ -1,7 +1,8 @@
 import type { ethers } from 'ethers';
 
-import { createLinks } from './peanut';
 import type { Email } from '$lib/types';
+
+import { createLinks } from './peanut';
 
 export async function sendReward(params: {
 	signer: ethers.Signer;
