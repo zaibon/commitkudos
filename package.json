@@ -44,15 +44,15 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@floating-ui/dom": "1.5.3",
-		"@socket.tech/socket-v2-sdk": "^1.24.1",
-		"@squirrel-labs/peanut-sdk": "^0.3.36",
-		"@vercel/analytics": "^1.1.1",
-		"@web3modal/ethers5": "^3.5.6",
+		"@floating-ui/dom": "1.6.3",
+		"@socket.tech/socket-v2-sdk": "^1.24.2",
+		"@squirrel-labs/peanut-sdk": "^0.4.10",
+		"@vercel/analytics": "^1.2.2",
+		"@web3modal/ethers5": "^4.0.13",
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
 		"just-debounce": "^1.1.0",
-		"wagmi": "^1.4.13"
+		"wagmi": "^2.5.7"
 	},
 	"pnpm": {
 		"overrides": {
