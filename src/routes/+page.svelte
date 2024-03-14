@@ -2,7 +2,8 @@
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import debounce from 'just-debounce';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import { page } from '$app/stores';
 	import Balance from '$lib/components/Balance.svelte';
@@ -11,6 +12,7 @@
 	import { getAccountStores, open } from '$lib/wallet';
 
 	const { isConnected, chainId, getSigner } = getAccountStores();
+
 	const toastStore = getToastStore();
 
 	// export let data: PageData;
@@ -29,8 +31,27 @@
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
+	let greetings = ['Find', 'Reward', 'Support'];
+	let index = 0;
+	let rol: number;
+
+	let titleClass = 'italic';
 	onMount(() => {
 		topContributors();
+		rol = window.setInterval(() => {
+			if (index === greetings.length - 1) {
+				index = 0;
+				// only show all the options onces, then stop sliding
+				clearInterval(rol);
+				titleClass = '';
+			} else {
+				index++;
+			}
+		}, 1250);
+	});
+
+	onDestroy(() => {
+		clearInterval(rol);
 	});
 
 	const topContributors = debounce(async () => {
@@ -165,7 +186,9 @@
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2">Find your top contributors</h2>
+		<h2 class="h2">
+			<span class={titleClass} transition:slide>{greetings[index]}</span> your top contributors
+		</h2>
 		<form class="w-full">
 			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">https://github.com/</div>
@@ -196,7 +219,7 @@
 						min="0"
 						placeholder="reward amount"
 					/>
-					<Balance class="select" bind:token={selectedToken} />
+					<Balance bind:token={selectedToken} />
 				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>

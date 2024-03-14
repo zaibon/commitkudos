@@ -1,11 +1,12 @@
 // import { chains } from '$lib/consts/chains';
 import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
-import type { Web3Modal } from '@web3modal/ethers5/dist/types/src/client';
-import type { ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { writable } from 'svelte/store';
 
 import type { PeanutChain } from './types';
+
+type Web3Modal = ReturnType<typeof createWeb3Modal>;
 
 export interface OpenOptions {
 	view: 'Account' | 'Connect' | 'Networks';
@@ -16,10 +17,6 @@ let modal: Web3Modal | null = null;
 export const getAccountStores = () => accountStores;
 
 export const accountStores = {
-	provider: writable<ethers.providers.Web3Provider | undefined>(undefined),
-	providerType: writable<'walletConnect' | 'injected' | 'coinbaseWallet' | 'eip6963' | undefined>(
-		undefined
-	),
 	address: writable<string | undefined>(undefined),
 	chainId: writable<number | undefined>(undefined),
 	isConnected: writable<boolean>(false),
@@ -57,8 +54,6 @@ export function initWeb3Modal() {
 
 	//TODO: unsubribe
 	modal?.subscribeProvider((newState) => {
-		accountStores.provider.set(newState.provider);
-		accountStores.providerType.set(newState.providerType);
 		accountStores.address.set(newState.address);
 		accountStores.chainId.set(newState.chainId);
 		accountStores.isConnected.set(newState.isConnected);
@@ -72,9 +67,13 @@ export function initWeb3Modal() {
 }
 
 function getSigner(): ethers.providers.JsonRpcSigner | undefined {
-	if (modal) {
-		return modal.getSigner();
-	}
+	if (!modal) return undefined;
+	const provider = modal.getWalletProvider();
+
+	if (!provider) return undefined;
+
+	const p = new ethers.providers.Web3Provider(provider);
+	return p.getSigner();
 }
 
 export async function open(options?: OpenOptions) {
