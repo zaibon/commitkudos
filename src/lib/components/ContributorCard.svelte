@@ -12,6 +12,7 @@
 	export let tabindex = 0;
 	export let reward: boolean = false;
 	let selectedToken: BalanceResult;
+	let rewardAmount: number;
 	function onKeyPress() {
 		dispatch('selected', selected);
 	}
@@ -59,11 +60,7 @@
 					inputmode="numeric"
 					placeholder="Amount"
 				/>
-				<Balance
-					class="select h-1/2 mt-auto rounded-sm"
-					alternative={selected}
-					bind:token={selectedToken}
-				/>
+				<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
 			</div>
 		{/if}
 	</section>

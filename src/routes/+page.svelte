@@ -10,17 +10,29 @@
 	import { getAccountStores, open } from '$lib/services/wallet';
 	import type { Author, CommitDetail, Email, User } from '$lib/types';
 
+	import type { Snapshot } from './$types';
+
+	export const snapshot: Snapshot<string> = {
+		capture: () => JSON.stringify({ repository, contributorsNr, rewardAmount }),
+		restore: (value) => {
+			let data = JSON.parse(value);
+			repository = data.repository;
+			contributorsNr = data.contributorsNr;
+			rewardAmount = data.rewardAmount;
+		}
+	};
+
 	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
 
 	// export let data: PageData;
 	let repository: string | null = $page.url.searchParams.get('repository');
-	let contributorsNr: number | null = $page.url.searchParams.has('contributor')
+	let contributorsNr: number = $page.url.searchParams.has('contributor')
 		? parseInt($page.url.searchParams.get('contributor') ?? '0')
-		: null;
-	let rewardAmount: number | null = $page.url.searchParams.has('reward')
+		: 0;
+	let rewardAmount: number = $page.url.searchParams.has('reward')
 		? parseFloat($page.url.searchParams.get('reward') ?? '0')
-		: null;
+		: 0;
 
 	let creatingLinks = false;
 	let top: string[] = [];
@@ -187,15 +199,7 @@
 			/>
 			{#if top.length > 0}
 				<div class="flex flex-row row mb-2">
-					<input
-						bind:value={rewardAmount}
-						class="input"
-						type="number"
-						step="any"
-						min="0"
-						placeholder="reward amount"
-					/>
-					<Balance class="select" bind:token={selectedToken} />
+					<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
 				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>

@@ -25,59 +25,61 @@
 
 	const { getSigner, chainId } = getAccountStores();
 
-	let repository: string = 'zaibon/commitkudos';
-	let contributors: Contributor[] = [
-		{
-			login: 'zaibon',
-			name: 'christophe de Carvalho',
-			avatarUrl: '/android-chrome-192x192.png',
-			email: 'user@mail.com',
-			twitter: '',
-			discord: '',
-			checked: false,
-			numberOfContributions: 10
-		},
-		{
-			login: 'zaibon',
-			name: 'christophe de Carvalho',
-			avatarUrl: '/android-chrome-192x192.png',
-			email: 'user@mail.com',
-			twitter: '',
-			discord: '',
-			checked: false,
-			numberOfContributions: 10
-		},
-		{
-			login: 'zaibon',
-			name: 'christophe de Carvalho',
-			avatarUrl: '/android-chrome-192x192.png',
-			email: 'user@mail.com',
-			twitter: '',
-			discord: '',
-			checked: false,
-			numberOfContributions: 10
-		},
-		{
-			login: 'zaibon',
-			name: 'christophe de Carvalho',
-			avatarUrl: '/android-chrome-192x192.png',
-			email: 'user@mail.com',
-			twitter: '',
-			discord: '',
-			checked: false,
-			numberOfContributions: 10
-		},
-		{
-			login: 'zaibon',
-			name: 'christophe de Carvalho',
-			avatarUrl: '/android-chrome-192x192.png',
-			email: 'user@mail.com',
-			twitter: '',
-			discord: '',
-			checked: false,
-			numberOfContributions: 10
-		}
-	];
+	// let repository: string = 'zaibon/py-dmidecode';
+	let repository: string = '';
+	let contributors: Contributor[] = [];
+	// let contributors: Contributor[] = [
+	// 	{
+	// 		login: 'zaibon',
+	// 		name: 'christophe de Carvalho',
+	// 		avatarUrl: '/android-chrome-192x192.png',
+	// 		email: 'user@mail.com',
+	// 		twitter: '',
+	// 		discord: '',
+	// 		checked: false,
+	// 		numberOfContributions: 10
+	// 	},
+	// 	{
+	// 		login: 'zaibon',
+	// 		name: 'christophe de Carvalho',
+	// 		avatarUrl: '/android-chrome-192x192.png',
+	// 		email: 'user@mail.com',
+	// 		twitter: '',
+	// 		discord: '',
+	// 		checked: false,
+	// 		numberOfContributions: 10
+	// 	},
+	// 	{
+	// 		login: 'zaibon',
+	// 		name: 'christophe de Carvalho',
+	// 		avatarUrl: '/android-chrome-192x192.png',
+	// 		email: 'user@mail.com',
+	// 		twitter: '',
+	// 		discord: '',
+	// 		checked: false,
+	// 		numberOfContributions: 10
+	// 	},
+	// 	{
+	// 		login: 'zaibon',
+	// 		name: 'christophe de Carvalho',
+	// 		avatarUrl: '/android-chrome-192x192.png',
+	// 		email: 'user@mail.com',
+	// 		twitter: '',
+	// 		discord: '',
+	// 		checked: false,
+	// 		numberOfContributions: 10
+	// 	},
+	// 	{
+	// 		login: 'zaibon',
+	// 		name: 'christophe de Carvalho',
+	// 		avatarUrl: '/android-chrome-192x192.png',
+	// 		email: 'user@mail.com',
+	// 		twitter: '',
+	// 		discord: '',
+	// 		checked: false,
+	// 		numberOfContributions: 10
+	// 	}
+	// ];
 	let selectAll: boolean = false;
 	let multiReward: boolean = false;
 	let selectedToken: BalanceResult;
@@ -152,14 +154,7 @@
 			{#if selected.length > 0}
 				{#if !multiReward}
 					<div class="mt-3 flex flex-row justify-end gap-x-1">
-						<input
-							bind:value={rewardAmount}
-							class="input"
-							type="text"
-							inputmode="numeric"
-							placeholder="Amount"
-						/>
-						<Balance class="select h-1/2 mt-auto" bind:token={selectedToken} />
+						<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
 					</div>
 				{/if}
 				<button
