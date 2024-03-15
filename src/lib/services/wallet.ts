@@ -1,4 +1,3 @@
-// import { chains } from '$lib/consts/chains';
 import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
 import { ethers } from 'ethers';
