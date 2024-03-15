@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 
-import { sendMail } from '$lib/mail';
+import { sendMail } from '$lib/services/mail';
 
 import type { RequestHandler } from './$types';
 

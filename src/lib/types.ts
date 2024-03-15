@@ -1,3 +1,5 @@
+import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+
 export interface CommitDetail {
 	sha: string;
 	node_id: string;
@@ -63,6 +65,17 @@ export interface User {
 	received_events_url: string;
 	type: string;
 	site_admin: boolean;
+}
+
+export interface Contributor {
+	login: string;
+	name: string;
+	avatarUrl: string;
+	email: string;
+	twitter?: string;
+	discord?: string;
+	checked: boolean;
+	numberOfContributions: number;
 }
 
 export interface Parent {
@@ -135,4 +148,9 @@ export interface Badge {
 	color?: string;
 	cacheSeconds?: number;
 	link?: string;
+}
+export interface RewardAmount {
+	contributor: Contributor;
+	amount: number;
+	token: BalanceResult;
 }

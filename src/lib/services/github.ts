@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 
-import type { CommitDetail } from './types';
+import type { CommitDetail } from '../types';
 
 export async function listCommits(
 	owner: string,
@@ -16,5 +16,8 @@ export async function listCommits(
 			Authorization: `bearer ${env.GITHUB_TOKEN}`
 		}
 	});
+	if (resp.status != 200) {
+		throw new Error('failed to fetch commits');
+	}
 	return await resp.json();
 }

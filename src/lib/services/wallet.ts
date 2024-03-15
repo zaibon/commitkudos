@@ -3,7 +3,7 @@ import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
 import { ethers } from 'ethers';
 import { writable } from 'svelte/store';
 
-import type { PeanutChain } from './types';
+import type { PeanutChain } from '../types';
 
 type Web3Modal = ReturnType<typeof createWeb3Modal>;
 export interface OpenOptions {
