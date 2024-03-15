@@ -6,16 +6,21 @@ export async function createLinks(
 	chainId: number,
 	amount: number,
 	numberOfLinks: number = 1,
-	tokenType = 0
+	tokenAddress?: string
 ) {
+	// 1 for ERC20 tokens 0 for native tokens
+	const tokenType =
+		tokenAddress && tokenAddress !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? 1 : 0;
+
 	const links = await peanut.createLinks({
 		structSigner: {
 			signer: wallet
 		},
 		linkDetails: {
-			chainId: chainId,
+			chainId: chainId.toString(),
 			tokenAmount: amount,
-			tokenType: tokenType // 0 is for native tokens
+			tokenType: tokenType,
+			tokenAddress: tokenAddress
 			// Values for tokenType are defined in SDK documentation:
 			// https://docs.peanut.to/integrations/building-with-the-sdk/sdk-reference/common-types#epeanutlinktype
 		},

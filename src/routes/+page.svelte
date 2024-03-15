@@ -1,36 +1,43 @@
 <script lang="ts">
-	import pkg from 'debounce';
-
-	import { createLinks } from '$lib/peanutes';
-	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { useWeb3Modal, useWeb3ModalAccount } from '$lib/wallet';
-
-	const { debounce } = pkg;
 	import { getToastStore } from '@skeletonlabs/skeleton';
-
-	import { onMount, onDestroy } from 'svelte';
+	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import debounce from 'just-debounce';
+	import { onDestroy, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	const { isConnected, chainId, getSigner } = useWeb3ModalAccount();
-	const { open } = useWeb3Modal();
+	import { page } from '$app/stores';
+	import Balance from '$lib/components/Balance.svelte';
+	import { createLinks } from '$lib/peanutes';
+	import type { Author, CommitDetail, Email, User } from '$lib/types';
+	import { getAccountStores, open } from '$lib/wallet';
+
+	const { isConnected, chainId, getSigner } = getAccountStores();
+
 	const toastStore = getToastStore();
 
-	let creatingLinks = false;
+	// export let data: PageData;
+	let repository: string | null = $page.url.searchParams.get('repository');
+	let contributorsNr: number | null = $page.url.searchParams.has('contributor')
+		? parseInt($page.url.searchParams.get('contributor') ?? '0')
+		: null;
+	let rewardAmount: number | null = $page.url.searchParams.has('reward')
+		? parseFloat($page.url.searchParams.get('reward') ?? '0')
+		: null;
 
-	let repository: string = '';
-	let contributorsNr: number | undefined = undefined;
-	let rewardAmount: number | undefined = undefined;
+	let creatingLinks = false;
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
+	let selectedToken: BalanceResult;
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
 	let greetings = ['Find', 'Reward', 'Support'];
 	let index = 0;
-	let rol: NodeJS.Timeout;
+	let rol: number;
 
 	onMount(() => {
-		rol = setInterval(() => {
+		topContributors();
+		rol = window.setInterval(() => {
 			if (index === greetings.length - 1) index = 0;
 			else index++;
 		}, 1250);
@@ -118,8 +125,13 @@
 		try {
 			const signer = getSigner();
 			if (signer) {
-				links = await createLinks(signer, $chainId, rewardAmount, selectedContributors.length, 0);
-				console.log(links);
+				links = await createLinks(
+					signer,
+					$chainId,
+					rewardAmount,
+					selectedContributors.length,
+					selectedToken.address
+				);
 			}
 			toastStore.close(toastId);
 		} catch (error) {
@@ -142,7 +154,7 @@
 		});
 		const promises = selectedContributors.map((contributor, i) => {
 			const link = links[i];
-			if (!contributor || !link) {
+			if (!repository || !contributor || !link) {
 				return;
 			}
 			const email: Email = {
@@ -193,14 +205,17 @@
 				placeholder="Number of contributors to reward"
 			/>
 			{#if top.length > 0}
-				<input
-					bind:value={rewardAmount}
-					class="input mb-2"
-					type="number"
-					step="any"
-					min="0"
-					placeholder="reward amount"
-				/>
+				<div class="flex flex-row row mb-2">
+					<input
+						bind:value={rewardAmount}
+						class="input"
+						type="number"
+						step="any"
+						min="0"
+						placeholder="reward amount"
+					/>
+					<Balance bind:token={selectedToken} />
+				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>
 					{#if top}
