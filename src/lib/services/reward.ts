@@ -9,7 +9,7 @@ export async function sendReward(params: {
 	chainId: number;
 	rewardAmount: number;
 	selectedToken: { name: string; address: string };
-	selected: { name: string; email: string }[];
+	contributors: { name: string; email: string }[];
 	repository: string;
 }) {
 	if (
@@ -17,30 +17,31 @@ export async function sendReward(params: {
 		!params.chainId ||
 		!params.rewardAmount ||
 		!params.selectedToken ||
-		params.selected.length === 0
+		params.contributors.length === 0
 	) {
-		return;
+		return [];
 	}
 
 	const links = await createLinks({
 		wallet: params.signer,
 		chainId: params.chainId,
 		amount: params.rewardAmount,
-		numberOfLinks: params.selected.length,
+		numberOfLinks: params.contributors.length,
 		tokenAddress: params.selectedToken.address
 	});
 
-	Promise.all(
+	await Promise.all(
 		links.map(async (link, i) => {
 			await sendEmail({
-				name: params.selected[i].name,
-				email: params.selected[i].email,
+				name: params.contributors[i].name,
+				email: params.contributors[i].email,
 				repoName: params.repository,
 				message: 'Thanks for your contribution!',
 				link: link.link
 			});
 		})
 	);
+	return links;
 }
 
 async function sendEmail(email: Email) {

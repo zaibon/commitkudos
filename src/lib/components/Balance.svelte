@@ -16,7 +16,6 @@
 		selected = sortedBalance[0];
 		token = sortedBalance[0];
 	}
-	$: amountStr = amount.toString();
 	const setMax = () => {
 		amount = selected?.amount || 0;
 	};
@@ -28,7 +27,7 @@
 
 <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 	<button class="input-group-shim" on:click={setMax}>Max</button>
-	<input placeholder="Reward amount" bind:value={amountStr} step="any" min="0" />
+	<input placeholder="Reward amount" bind:value={amount} type="number" step="any" min="0" />
 	<select bind:value={selected} on:change={onChangeToken}>
 		{#each sortedBalance as balance}
 			<option value={balance}>{balance.symbol} </option>

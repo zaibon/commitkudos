@@ -2,7 +2,7 @@
 	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import { createEventDispatcher } from 'svelte';
 
-	import type { Contributor } from '$lib/types';
+	import type { Contributor, RewardAmount } from '$lib/types';
 
 	import Balance from './Balance.svelte';
 
@@ -11,8 +11,11 @@
 	export let selected: boolean = false;
 	export let tabindex = 0;
 	export let reward: boolean = false;
-	let selectedToken: BalanceResult;
-	let rewardAmount: number;
+	export let rewardAmount: RewardAmount = {
+		contributor: contributor,
+		token: {} as BalanceResult,
+		amount: 0
+	};
 	function onKeyPress() {
 		dispatch('selected', selected);
 	}
@@ -52,15 +55,7 @@
 		</div>
 		{#if reward}
 			<div class="mt-3 flex flex-row justify-end gap-x-1">
-				<input
-					class="input rounded-sm"
-					class:variant-filled={!selected}
-					class:variant-filled-surface={selected}
-					type="text"
-					inputmode="numeric"
-					placeholder="Amount"
-				/>
-				<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
+				<Balance bind:token={rewardAmount.token} bind:amount={rewardAmount.amount} />
 			</div>
 		{/if}
 	</section>

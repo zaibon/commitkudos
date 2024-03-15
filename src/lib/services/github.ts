@@ -16,5 +16,8 @@ export async function listCommits(
 			Authorization: `bearer ${env.GITHUB_TOKEN}`
 		}
 	});
+	if (resp.status != 200) {
+		throw new Error('failed to fetch commits');
+	}
 	return await resp.json();
 }

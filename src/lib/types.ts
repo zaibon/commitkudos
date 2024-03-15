@@ -1,3 +1,5 @@
+import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+
 export interface CommitDetail {
 	sha: string;
 	node_id: string;
@@ -146,4 +148,9 @@ export interface Badge {
 	color?: string;
 	cacheSeconds?: number;
 	link?: string;
+}
+export interface RewardAmount {
+	contributor: Contributor;
+	amount: number;
+	token: BalanceResult;
 }

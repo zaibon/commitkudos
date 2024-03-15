@@ -19,10 +19,10 @@ export async function createLinks(params: {
 			signer: params.wallet
 		},
 		linkDetails: {
-			chainId: params.chainId,
+			chainId: params.chainId.toString(),
 			tokenAmount: params.amount,
 			tokenType: tokenType,
-			tokenAddress: params.tokenAddress
+			tokenAddress: tokenType == 1 ? params.tokenAddress : undefined
 			// Values for tokenType are defined in SDK documentation:
 			// https://docs.peanut.to/integrations/building-with-the-sdk/sdk-reference/common-types#epeanutlinktype
 		},

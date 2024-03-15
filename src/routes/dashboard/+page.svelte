@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { SlideToggle } from '@skeletonlabs/skeleton';
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { getToastStore,ProgressRadial , SlideToggle } from '@skeletonlabs/skeleton';
+		import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import debounce from 'just-debounce';
 
 	import Balance from '$lib/components/Balance.svelte';
@@ -8,7 +8,7 @@
 	import { loadContributors } from '$lib/pages/dashboard/lib';
 	import { sendReward } from '$lib/services/reward';
 	import { getAccountStores } from '$lib/services/wallet';
-	import type { Contributor } from '$lib/types';
+	import type { Contributor, RewardAmount } from '$lib/types';
 
 	import type { Snapshot } from './$types';
 
@@ -23,91 +23,100 @@
 		}
 	};
 
+	const toastStore = getToastStore();
 	const { getSigner, chainId } = getAccountStores();
 
-	// let repository: string = 'zaibon/py-dmidecode';
 	let repository: string = '';
 	let contributors: Contributor[] = [];
-	// let contributors: Contributor[] = [
-	// 	{
-	// 		login: 'zaibon',
-	// 		name: 'christophe de Carvalho',
-	// 		avatarUrl: '/android-chrome-192x192.png',
-	// 		email: 'user@mail.com',
-	// 		twitter: '',
-	// 		discord: '',
-	// 		checked: false,
-	// 		numberOfContributions: 10
-	// 	},
-	// 	{
-	// 		login: 'zaibon',
-	// 		name: 'christophe de Carvalho',
-	// 		avatarUrl: '/android-chrome-192x192.png',
-	// 		email: 'user@mail.com',
-	// 		twitter: '',
-	// 		discord: '',
-	// 		checked: false,
-	// 		numberOfContributions: 10
-	// 	},
-	// 	{
-	// 		login: 'zaibon',
-	// 		name: 'christophe de Carvalho',
-	// 		avatarUrl: '/android-chrome-192x192.png',
-	// 		email: 'user@mail.com',
-	// 		twitter: '',
-	// 		discord: '',
-	// 		checked: false,
-	// 		numberOfContributions: 10
-	// 	},
-	// 	{
-	// 		login: 'zaibon',
-	// 		name: 'christophe de Carvalho',
-	// 		avatarUrl: '/android-chrome-192x192.png',
-	// 		email: 'user@mail.com',
-	// 		twitter: '',
-	// 		discord: '',
-	// 		checked: false,
-	// 		numberOfContributions: 10
-	// 	},
-	// 	{
-	// 		login: 'zaibon',
-	// 		name: 'christophe de Carvalho',
-	// 		avatarUrl: '/android-chrome-192x192.png',
-	// 		email: 'user@mail.com',
-	// 		twitter: '',
-	// 		discord: '',
-	// 		checked: false,
-	// 		numberOfContributions: 10
-	// 	}
-	// ];
+	let creatingLinks: boolean = false;
+
 	let selectAll: boolean = false;
 	let multiReward: boolean = false;
-	let selectedToken: BalanceResult;
-	let rewardAmount: number | undefined;
-	$: selected = contributors.filter((c) => c.checked);
+	let multiRewardAmounts: RewardAmount[] = [];
+	let singleRewardAmount: { amount: number; token: BalanceResult } = {
+		amount: 0,
+		token: {} as BalanceResult
+	};
+	$: selectedContributors = contributors.filter((c) => c.checked);
 	$: isAllSelected = contributors.length > 0 && contributors.every((c) => c.checked);
 
 	function toggleSelectAll() {
 		selectAll = !selectAll;
 		contributors = contributors.map((c) => ({ ...c, checked: selectAll }));
 	}
+
+	async function toastedReward() {
+		const toastId = toastStore.trigger({
+			message: 'Rewards are being created',
+			background: 'variant-filled-primary',
+			autohide: false
+		});
+		try {
+			creatingLinks = true;
+			await reward();
+		} catch (error) {
+			toastStore.trigger({
+				message: 'failed to generate rewards',
+				background: 'variant-filled-warning'
+			});
+		} finally {
+			toastStore.close(toastId);
+			creatingLinks = false;
+		}
+	}
+
 	async function reward() {
-		if (!$chainId || !rewardAmount || !selectedToken || selected.length === 0) {
+		if (multiReward) {
+			const linkCreateReq = multiRewardAmounts
+				.filter((r) => r.amount > 0 && r.contributor)
+				.map((r) => {
+					return {
+						amount: r.amount,
+						token: r.token,
+						contributors: [r.contributor]
+					};
+				});
+			await Promise.all(
+				linkCreateReq.map(async (req) => {
+					return await singleReward($chainId, req.amount, req.token, req.contributors, repository);
+				})
+			);
+		} else {
+			await singleReward(
+				$chainId,
+				singleRewardAmount.amount,
+				singleRewardAmount.token,
+				selectedContributors,
+				repository
+			);
+		}
+	}
+
+	async function singleReward(
+		chainId: number | undefined,
+		rewardAmount: number,
+		token: BalanceResult,
+		contributors: Contributor[],
+		repository: string
+	) {
+		if (!chainId || !rewardAmount || !token || selectedContributors.length === 0) {
 			return;
 		}
 		const signer = getSigner();
 		if (!signer) {
 			return;
 		}
-		await sendReward({
+		const links = await sendReward({
 			signer: signer,
-			chainId: $chainId,
+			chainId: chainId,
 			rewardAmount: rewardAmount,
-			selectedToken: selectedToken,
-			selected: selected,
+			selectedToken: token,
+			contributors: contributors,
 			repository: repository
 		});
+		console.log('links', links);
 	}
+
 	const load = debounce(async () => {
 		if (repository === '') {
 			contributors = [];
@@ -151,23 +160,31 @@
 					disabled={contributors.length === 0}>Multi rewards</SlideToggle
 				>
 			</div>
-			{#if selected.length > 0}
+			{#if selectedContributors.length > 0}
 				{#if !multiReward}
 					<div class="mt-3 flex flex-row justify-end gap-x-1">
-						<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
+						<Balance
+							bind:token={singleRewardAmount.token}
+							bind:amount={singleRewardAmount.amount}
+						/>
 					</div>
 				{/if}
 				<button
 					class="btn variant-filled-primary"
-					on:click={reward}
-					disabled={selected.length === 0}>Generate reward</button
+					on:click={toastedReward}
+					disabled={selectedContributors.length === 0 || creatingLinks}
 				>
+					Generate reward
+					{#if creatingLinks}
+						<ProgressRadial class="w-8 pl-2" />
+					{/if}
+				</button>
 			{/if}
 		</div>
 		<div class="flex flex-col gap-2">
 			<h3 class="h3 text-center underline font-small">selected contributors</h3>
 			<ul>
-				{#each selected as c}
+				{#each selectedContributors as c}
 					<li>{c.login}</li>
 				{/each}
 			</ul>
@@ -186,8 +203,13 @@
 			</div>
 		{:else}
 			<div class="grid md:grid-cols-1 lg:grid-cols-2 gap-3">
-				{#each contributors as contributor}
-					<ContributorCard bind:selected={contributor.checked} {contributor} reward={multiReward} />
+				{#each contributors as contributor, i}
+					<ContributorCard
+						bind:selected={contributor.checked}
+						{contributor}
+						reward={multiReward}
+						bind:rewardAmount={multiRewardAmounts[i]}
+					/>
 				{/each}
 			</div>
 		{/if}

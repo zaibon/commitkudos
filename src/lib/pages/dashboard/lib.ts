@@ -19,6 +19,9 @@ export async function loadContributors(repository: string): Promise<Contributor[
 	}
 
 	const commits: CommitDetail[] = await resp.json();
+	if (!commits) {
+		return [];
+	}
 	// convert commits to contributors
 	let contributors = commits.map(toContributor);
 	// deduplicate contributors by login
