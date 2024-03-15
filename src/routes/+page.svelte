@@ -248,9 +248,6 @@
 							In progress ...
 						{/if}
 					</button>
-					<button class="btn variant-outline-primary w-full" disabled
-						>save recurring (coming soon)</button
-					>
 				</div>
 			{:else if links.length > 0}
 				<button on:click={sendEmails} class="btn variant-filled-primary w-full" type="submit">
