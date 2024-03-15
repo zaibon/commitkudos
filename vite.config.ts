@@ -6,10 +6,11 @@ import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 export default defineConfig({
 	plugins: [
 		sentrySvelteKit({
-			sourceMapsUploadOptions: {
-				org: 'zaibon',
-				project: 'commitkudos'
-			},
+			autoUploadSourceMaps: false,
+			// sourceMapsUploadOptions: {
+			// 	org: 'zaibon',
+			// 	project: 'commitkudos',
+			// },
 			adapter: 'vercel'
 		}),
 		sveltekit(),
