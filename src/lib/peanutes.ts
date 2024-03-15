@@ -17,7 +17,7 @@ export async function createLinks(
 			signer: wallet
 		},
 		linkDetails: {
-			chainId: chainId,
+			chainId: chainId.toString(),
 			tokenAmount: amount,
 			tokenType: tokenType,
 			tokenAddress: tokenAddress
