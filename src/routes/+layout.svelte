@@ -4,11 +4,11 @@
 	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 	import { AppBar, AppShell, initializeStores, storePopup, Toast } from '@skeletonlabs/skeleton';
 	import { inject } from '@vercel/analytics';
+	import { onMount } from 'svelte';
 
 	import { dev } from '$app/environment';
 	import Web3Modal from '$lib/components/Web3Modal.svelte';
 	import { initWeb3Modal } from '$lib/wallet';
-	import { onMount } from 'svelte';
 
 	// sentry
 	inject({ mode: dev ? 'development' : 'production' });
