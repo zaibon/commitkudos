@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import debounce from 'just-debounce';
 	import { onMount } from 'svelte';
 
 	import { page } from '$app/stores';
-	import Balance from '$lib/components/Balance.svelte';
+	import BalanceInput from '$lib/components/Balance.svelte';
 	import { createLinks } from '$lib/services/peanut';
-	import { getAccountStores, open } from '$lib/services/wallet';
-	import type { Author, CommitDetail, Email, User } from '$lib/types';
+	import { chainId, isConnected, modal, signer } from '$lib/services/wallet';
+	import type { Author, Balance, CommitDetail, Email, User } from '$lib/types';
 
 	import type { Snapshot } from './$types';
 
@@ -22,7 +21,6 @@
 		}
 	};
 
-	const { isConnected, chainId, getSigner } = getAccountStores();
 	const toastStore = getToastStore();
 
 	// export let data: PageData;
@@ -37,7 +35,7 @@
 	let creatingLinks = false;
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
-	let selectedToken: BalanceResult;
+	let selectedToken: Balance;
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
@@ -102,7 +100,7 @@
 
 	const createLink = async () => {
 		if (!$isConnected || !$chainId) {
-			await open();
+			await modal.open();
 			return;
 		}
 
@@ -121,15 +119,16 @@
 			autohide: false
 		});
 		try {
-			const signer = getSigner();
-			if (signer) {
-				links = await createLinks({
-					wallet: signer,
+			if ($signer) {
+				await createLinks({
+					signer: $signer,
 					chainId: $chainId,
 					amount: rewardAmount,
 					numberOfLinks: selectedContributors.length,
-					tokenAddress: selectedToken.address
+					token: selectedToken
 				});
+			} else {
+				console.log('wallet client not found');
 			}
 			toastStore.close(toastId);
 		} catch (error) {
@@ -137,6 +136,7 @@
 				message: 'failed to generate rewards',
 				background: 'variant-filled-warning'
 			});
+			console.log(error);
 		} finally {
 			toastStore.close(toastId);
 			creatingLinks = false;
@@ -199,7 +199,7 @@
 			/>
 			{#if top.length > 0}
 				<div class="flex flex-row row mb-2">
-					<Balance bind:token={selectedToken} bind:amount={rewardAmount} />
+					<BalanceInput bind:token={selectedToken} bind:amount={rewardAmount} />
 				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>

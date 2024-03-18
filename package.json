@@ -44,21 +44,15 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@ankr.com/ankr.js": "^0.5.0",
 		"@floating-ui/dom": "1.6.3",
-		"@socket.tech/socket-v2-sdk": "^1.24.1",
-		"@squirrel-labs/peanut-sdk": "^0.4.14",
 		"@sentry/sveltekit": "^7.107.0",
+		"@squirrel-labs/peanut-sdk": "^0.4.14",
 		"@vercel/analytics": "^1.1.1",
 		"@web3modal/ethers5": "^4.1.1",
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
 		"just-debounce": "^1.1.0",
-		"wagmi": "^2.5.7"
-	},
-	"pnpm": {
-		"overrides": {
-			"@socket.tech/ll-core": "^0.1.49",
-			"@socket.tech/ll-core-v2": "^0.0.68"
-		}
+		"viem": "^2.8.10"
 	}
 }

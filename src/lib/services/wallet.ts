@@ -1,89 +1,119 @@
-import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5';
 import { ethers } from 'ethers';
-import { writable } from 'svelte/store';
+import { derived, type Readable, readable } from 'svelte/store';
+import {
+	arbitrum,
+	avalanche,
+	base,
+	bsc,
+	gnosis,
+	goerli,
+	linea,
+	mainnet,
+	optimism,
+	polygon,
+	polygonMumbai,
+	polygonZkEvm
+} from 'viem/chains';
+import { type Chain } from 'viem/chains';
 
-import type { PeanutChain } from '../types';
+const chains = [
+	mainnet,
+	goerli,
+	optimism,
+	bsc,
+	gnosis,
+	polygon,
+	base,
+	arbitrum,
+	avalanche,
+	linea,
+	polygonMumbai,
+	polygonZkEvm
+];
 
-type Web3Modal = ReturnType<typeof createWeb3Modal>;
+function toEthChain(chain: Chain) {
+	return {
+		rpcUrl: chain.rpcUrls.default.http[0],
+		explorerUrl: chain.blockExplorers?.default.url ?? '', //FIXME
+		currency: chain.nativeCurrency.symbol,
+		name: chain.name,
+		chainId: chain.id
+	};
+}
+
 export interface OpenOptions {
 	view: 'Account' | 'Connect' | 'Networks';
 }
 
-let modal: Web3Modal | null = null;
-
-export const getAccountStores = () => accountStores;
-
-export const accountStores = {
-	address: writable<string | undefined>(undefined),
-	chainId: writable<number | undefined>(undefined),
-	isConnected: writable<boolean>(false),
-	getSigner
+const projectId = 'f71066d156ed5402df3e3e516de81a96';
+const metadata = {
+	name: 'CommitKudos',
+	description: `Empowering Open-Source Collaboration with Web3 Rewards, CommitKudos is a designed to celebrate and support the open-source community.`,
+	url: 'https://commitkudos.com',
+	icons: ['https://commitkudos.com/favicon-32x32.png']
 };
 
-export const modalSateStores = {
-	selectedNetworkId: writable<number | undefined>(undefined),
-	isOpen: writable<boolean>(false)
-};
+const ethersConfig = defaultConfig({
+	enableEIP6963: true,
+	enableInjected: false,
+	enableCoinbase: false,
+	metadata
+});
 
-export function initWeb3Modal() {
-	const projectId = 'f71066d156ed5402df3e3e516de81a96';
+export const modal = createWeb3Modal({
+	ethersConfig,
+	chains: chains.map(toEthChain),
+	projectId
+});
 
-	const metadata = {
-		name: 'CommitKudos',
-		description: `Empowering Open-Source Collaboration with Web3 Rewards, CommitKudos is a designed to celebrate and support the open-source community.`,
-		url: 'https://commitkudos.com',
-		icons: ['https://commitkudos.com/favicon-32x32.png']
-	};
+export const chainId = readable<number | undefined>(modal.getChainId(), (set) =>
+	modal.subscribeState((state) => {
+		if (state.selectedNetworkId) {
+			set(state.selectedNetworkId);
+		} else {
+			set(undefined);
+		}
+	})
+);
+export const provider = readable<ethers.providers.Web3Provider | undefined>(undefined, (set) =>
+	modal.subscribeProvider((state) => {
+		if (state.provider) {
+			const ethersProvider = new ethers.providers.Web3Provider(state.provider);
+			set(ethersProvider);
+		} else {
+			set(undefined);
+		}
+	})
+);
+export const isConnected = readable(modal.getIsConnected(), (set) =>
+	modal.subscribeProvider((state) => {
+		set(state.isConnected);
+	})
+);
+export const address = readable<string | undefined>(modal.getAddress(), (set) =>
+	modal.subscribeProvider((state) => {
+		if (state.address) {
+			set(state.address);
+		} else {
+			set(undefined);
+		}
+	})
+);
 
-	modal = createWeb3Modal({
-		ethersConfig: defaultConfig({ metadata }),
-		chains: (Object.values(CHAIN_DETAILS) as PeanutChain[]).map((chain: PeanutChain) => {
-			return {
-				rpcUrl: chain.rpc[0],
-				explorerUrl: chain.explorers[0].url,
-				currency: chain.nativeCurrency.symbol.toString(),
-				name: chain.name,
-				chainId: chain.chainId
-			};
-		}),
-		projectId
-	});
+export const chainInfo = derived(
+	chainId,
+	($chainId) => {
+		if (!$chainId) {
+			return undefined;
+		}
+		return chains.find((chain) => chain.id === $chainId);
+	},
+	undefined
+);
 
-	//TODO: unsubscribe
-	modal?.subscribeProvider((newState) => {
-		accountStores.address.set(newState.address);
-		accountStores.chainId.set(newState.chainId);
-		accountStores.isConnected.set(newState.isConnected);
-	});
-
-	//TODO: unsubscribe
-	modal?.subscribeState((newState) => {
-		modalSateStores.selectedNetworkId.set(newState.selectedNetworkId);
-		modalSateStores.isOpen.set(newState.open);
-	});
-}
-
-function getSigner(): ethers.providers.JsonRpcSigner | undefined {
-	if (!modal) return undefined;
-	const provider = modal.getWalletProvider();
-
-	if (!provider) return undefined;
-
-	const p = new ethers.providers.Web3Provider(provider);
-	return p.getSigner();
-}
-
-export async function open(options?: OpenOptions) {
-	if (!modal) {
-		throw new Error('Please call "createWeb3Modal" before using "useWeb3Modal" hook');
+export const signer = derived(provider, ($provider, set) => {
+	if ($provider) {
+		set($provider.getSigner());
 	}
-	await modal?.open(options);
-}
-
-export async function close() {
-	if (!modal) {
-		throw new Error('Please call "createWeb3Modal" before using "useWeb3Modal" hook');
-	}
-	await modal?.close();
-}
+}) as Readable<ethers.Signer | undefined>;

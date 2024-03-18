@@ -17,7 +17,8 @@ export async function listCommits(
 		}
 	});
 	if (resp.status != 200) {
-		throw new Error('failed to fetch commits');
+		const text = await resp.text();
+		throw new Error(`failed to fetch commits ${text}`);
 	}
 	return await resp.json();
 }

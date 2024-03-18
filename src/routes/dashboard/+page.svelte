@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { getToastStore,ProgressRadial , SlideToggle } from '@skeletonlabs/skeleton';
-		import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { getToastStore, ProgressRadial, SlideToggle } from '@skeletonlabs/skeleton';
 	import debounce from 'just-debounce';
 
-	import Balance from '$lib/components/Balance.svelte';
+	import BalanceInput from '$lib/components/Balance.svelte';
 	import ContributorCard from '$lib/components/ContributorCard.svelte';
 	import { loadContributors } from '$lib/pages/dashboard/lib';
 	import { sendReward } from '$lib/services/reward';
-	import { getAccountStores } from '$lib/services/wallet';
-	import type { Contributor, RewardAmount } from '$lib/types';
+	import { chainId, signer } from '$lib/services/wallet';
+	import type { Balance, Contributor, RewardAmount } from '$lib/types';
 
 	import type { Snapshot } from './$types';
 
@@ -24,7 +23,6 @@
 	};
 
 	const toastStore = getToastStore();
-	const { getSigner, chainId } = getAccountStores();
 
 	let repository: string = '';
 	let contributors: Contributor[] = [];
@@ -33,9 +31,9 @@
 	let selectAll: boolean = false;
 	let multiReward: boolean = false;
 	let multiRewardAmounts: RewardAmount[] = [];
-	let singleRewardAmount: { amount: number; token: BalanceResult } = {
+	let singleRewardAmount: { amount: number; token: Balance } = {
 		amount: 0,
-		token: {} as BalanceResult
+		token: {} as Balance
 	};
 	$: selectedContributors = contributors.filter((c) => c.checked);
 	$: isAllSelected = contributors.length > 0 && contributors.every((c) => c.checked);
@@ -55,8 +53,9 @@
 			creatingLinks = true;
 			await reward();
 		} catch (error) {
+			console.log(error);
 			toastStore.trigger({
-				message: 'failed to generate rewards',
+				message: 'Failed to generate rewards',
 				background: 'variant-filled-warning'
 			});
 		} finally {
@@ -95,19 +94,19 @@
 	async function singleReward(
 		chainId: number | undefined,
 		rewardAmount: number,
-		token: BalanceResult,
+		token: Balance,
 		contributors: Contributor[],
 		repository: string
 	) {
 		if (!chainId || !rewardAmount || !token || selectedContributors.length === 0) {
 			return;
 		}
-		const signer = getSigner();
-		if (!signer) {
+
+		if (!$signer) {
 			return;
 		}
 		const links = await sendReward({
-			signer: signer,
+			signer: $signer,
 			chainId: chainId,
 			rewardAmount: rewardAmount,
 			selectedToken: token,
@@ -163,7 +162,7 @@
 			{#if selectedContributors.length > 0}
 				{#if !multiReward}
 					<div class="mt-3 flex flex-row justify-end gap-x-1">
-						<Balance
+						<BalanceInput
 							bind:token={singleRewardAmount.token}
 							bind:amount={singleRewardAmount.amount}
 						/>
