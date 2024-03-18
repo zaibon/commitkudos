@@ -1,6 +1,6 @@
 import type { ethers } from 'ethers';
 
-import type { Email } from '$lib/types';
+import type { Balance, Email } from '$lib/types';
 
 import { createLinks } from './peanut';
 
@@ -8,7 +8,7 @@ export async function sendReward(params: {
 	signer: ethers.Signer;
 	chainId: number;
 	rewardAmount: number;
-	selectedToken: { name: string; address: string };
+	selectedToken: Balance;
 	contributors: { name: string; email: string }[];
 	repository: string;
 }) {
@@ -23,11 +23,11 @@ export async function sendReward(params: {
 	}
 
 	const links = await createLinks({
-		wallet: params.signer,
+		signer: params.signer,
 		chainId: params.chainId,
 		amount: params.rewardAmount,
 		numberOfLinks: params.contributors.length,
-		tokenAddress: params.selectedToken.address
+		token: params.selectedToken
 	});
 
 	await Promise.all(
@@ -37,7 +37,7 @@ export async function sendReward(params: {
 				email: params.contributors[i].email,
 				repoName: params.repository,
 				message: 'Thanks for your contribution!',
-				link: link.link
+				link: link
 			});
 		})
 	);

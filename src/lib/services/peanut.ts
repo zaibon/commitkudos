@@ -1,32 +1,40 @@
 import { peanut } from '@squirrel-labs/peanut-sdk';
-import type { ethers } from 'ethers';
+import { ethers } from 'ethers';
+
+import type { Balance } from '$lib/types';
+
+peanut.CHAIN_DETAILS;
 
 export async function createLinks(params: {
-	wallet: ethers.Signer;
+	signer: ethers.Signer;
 	chainId: number;
 	amount: number;
 	numberOfLinks: number;
-	tokenAddress?: string;
+	token: Balance;
 }) {
-	// 1 for ERC20 tokens 0 for native tokens
+	// Values for tokenType are defined in SDK documentation:
+	// https://docs.peanut.to/integrations/building-with-the-sdk/sdk-reference/common-types#epeanutlinktype
+	// 0 for ether, 1 for erc20
 	const tokenType =
-		params.tokenAddress && params.tokenAddress !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+		params.token.address && params.token.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 			? 1
 			: 0;
 
-	const links = await peanut.createLinks({
+	const linkDetails = {
+		chainId: params.chainId.toString(),
+		tokenAmount: params.amount,
+		tokenType: tokenType,
+		tokenAddress: tokenType == 1 ? params.token.address : undefined,
+		tokenDecimals: params.token.decimals
+	};
+
+	const createdLinks = await peanut.createLinks({
 		structSigner: {
-			signer: params.wallet
+			signer: params.signer
 		},
-		linkDetails: {
-			chainId: params.chainId.toString(),
-			tokenAmount: params.amount,
-			tokenType: tokenType,
-			tokenAddress: tokenType == 1 ? params.tokenAddress : undefined
-			// Values for tokenType are defined in SDK documentation:
-			// https://docs.peanut.to/integrations/building-with-the-sdk/sdk-reference/common-types#epeanutlinktype
-		},
+		linkDetails,
 		numberOfLinks: params.numberOfLinks
 	});
-	return links;
+
+	return createdLinks.map((link) => link.link);
 }
