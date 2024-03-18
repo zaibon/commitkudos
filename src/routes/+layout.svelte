@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.postcss';
+	import '$lib/services/wallet';
 
 	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 	import {
@@ -11,19 +12,14 @@
 		Toast
 	} from '@skeletonlabs/skeleton';
 	import { inject } from '@vercel/analytics';
-	import { onMount } from 'svelte';
 
 	import { dev } from '$app/environment';
 	import Web3Modal from '$lib/components/Web3Modal.svelte';
-	import { initWeb3Modal } from '$lib/services/wallet';
 
 	// sentry
 	inject({ mode: dev ? 'development' : 'production' });
 
 	initializeStores();
-	onMount(() => {
-		initWeb3Modal();
-	});
 
 	// Floating UI for Popups
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
@@ -43,6 +39,7 @@
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<Web3Modal />
+				<!-- <w3m-button></w3m-button> -->
 				<LightSwitch />
 			</svelte:fragment>
 		</AppBar>

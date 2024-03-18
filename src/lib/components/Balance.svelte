@@ -1,21 +1,18 @@
 <script lang="ts">
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { balances } from '$lib/services/balances';
+	import type { Balance } from '$lib/types';
 
-	import { balances } from '$lib/services/socketTech';
-
-	export let token: BalanceResult;
+	export let token: Balance;
 	export let amount: number = 0;
 
-	let selected: BalanceResult;
+	let selected: Balance;
+	let sortedBalance: Balance[];
+	balances.subscribe((value) => {
+		sortedBalance = $balances.sort((a, b) => (a.symbol < b.symbol ? -1 : 1));
+		selected = value[0];
+		token = value[0];
+	});
 
-	$: sortedBalance = $balances.sort((a: BalanceResult, b: BalanceResult) =>
-		a.symbol < b.symbol ? -1 : 1
-	);
-	// set the first balance as selected once the balances is loaded
-	$: if (sortedBalance.length > 0 && !selected) {
-		selected = sortedBalance[0];
-		token = sortedBalance[0];
-	}
 	const setMax = () => {
 		amount = selected?.amount || 0;
 	};
