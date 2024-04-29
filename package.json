@@ -13,14 +13,14 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@skeletonlabs/skeleton": "2.9.0",
+		"@skeletonlabs/skeleton": "2.9.2",
 		"@skeletonlabs/tw-plugin": "0.3.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-vercel": "^5.1.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@tailwindcss/forms": "0.5.7",
-		"@tailwindcss/typography": "0.5.10",
+		"@tailwindcss/typography": "0.5.13",
 		"@types/debounce": "^1.2.4",
 		"@types/node": "20.11.28",
 		"@typescript-eslint/eslint-plugin": "^7.2.0",
