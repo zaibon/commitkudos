@@ -273,4 +273,8 @@
 			{/if}
 		</form>
 	</div>
+
+	<div class="fixed bottom-4 right-4">
+		<a href="/dashboard" class="btn variant-ghost-tertiary"> Expert mode </a>
+	</div>
 </div>

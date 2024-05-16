@@ -213,4 +213,7 @@
 			</div>
 		{/if}
 	</section>
+	<div class="fixed bottom-4 right-4">
+		<a href="/" class="btn variant-ghost-tertiary"> Simple mode </a>
+	</div>
 </div>
