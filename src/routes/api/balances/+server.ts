@@ -6,7 +6,7 @@ import type { Balance } from '$lib/types';
 
 import type { RequestHandler } from './$types';
 
-const ankr = new AnkrProvider(env.ANKR_PROVIDER);
+const ankr = new AnkrProvider(env.ANKR_PROVIDER ?? '');
 
 const _chainMapping: Record<number, Blockchain> = {
 	1: 'eth',
