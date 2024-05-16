@@ -47,7 +47,7 @@
 	onMount(() => {
 		topContributors();
 		rol = window.setInterval(() => {
-			if (index === greetings.length - 1) index = 0;
+			if (index === greetings.length - 1) clearInterval(rol);
 			else index++;
 		}, 1250);
 	});
