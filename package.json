@@ -45,10 +45,10 @@
 	"type": "module",
 	"dependencies": {
 		"@ankr.com/ankr.js": "^0.5.0",
-		"@floating-ui/dom": "1.6.3",
+		"@floating-ui/dom": "1.6.5",
 		"@sentry/sveltekit": "^7.107.0",
 		"@squirrel-labs/peanut-sdk": "^0.4.14",
-		"@vercel/analytics": "^1.1.1",
+		"@vercel/analytics": "^1.2.2",
 		"@web3modal/ethers5": "^4.1.1",
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
