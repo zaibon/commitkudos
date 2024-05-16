@@ -16,6 +16,11 @@ export async function listCommits(
 			Authorization: `bearer ${env.GITHUB_TOKEN}`
 		}
 	});
+
+	if (resp.status == 404) {
+		throw new Error(`repository ${owner}/${name} not found`);
+	}
+
 	if (resp.status != 200) {
 		const text = await resp.text();
 		throw new Error(`failed to fetch commits ${text}`);

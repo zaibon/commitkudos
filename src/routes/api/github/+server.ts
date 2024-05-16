@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 
 import { listCommits } from '$lib/services/github';
 
@@ -16,7 +16,11 @@ export const GET: RequestHandler = async ({ url }) => {
 		return json({ error: 'repository name format invalid' }, { status: 400 });
 	}
 
-	const commits = await listCommits(owner, name, since);
-
-	return json(commits);
+	try {
+		const commits = await listCommits(owner, name, since);
+		return json(commits);
+	} catch (err) {
+		console.log((err as Error).message);
+		error(500, err as Error);
+	}
 };
