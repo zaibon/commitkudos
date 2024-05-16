@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import debounce from 'just-debounce';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import { page } from '$app/stores';
 	import BalanceInput from '$lib/components/Balance.svelte';
@@ -39,8 +40,20 @@
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
+	let greetings = ['Find', 'Reward', 'Support'];
+	let index = 0;
+	let rol: number;
+
 	onMount(() => {
 		topContributors();
+		rol = window.setInterval(() => {
+			if (index === greetings.length - 1) index = 0;
+			else index++;
+		}, 1250);
+	});
+
+	onDestroy(() => {
+		clearInterval(rol);
 	});
 
 	const topContributors = debounce(async () => {
@@ -176,8 +189,12 @@
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2">Find your top contributors</h2>
-		<form class="w-full">
+		<h2 class="h2">
+			<div style="display: inline">
+				<bold transition:slide>{greetings[index]}</bold> your top contributors
+			</div>
+		</h2>
+		<form>
 			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">https://github.com/</div>
 				<input

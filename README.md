@@ -36,4 +36,4 @@ Together, let's build a future where open-source thrives and contributors are re
 
 Add a badge on your repository README file to encourage users to give some Kudos !
 
-[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fzaibon%2Fcommitkudos&query=%24.name&style=flat-square&label=Give%20some%20Kudos&cacheSeconds=3600)](https://commitkudos.com/?repository=zaibon%2Fcommitkudos&contributors=5&reward=5)
+[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fzaibon%2Fcommitkudos&query=%24.name&style=flat-square&label=Give%20some%20Kudos&cacheSeconds=3600)](https://commitkudos.com/?repository=zaibon%2Fcommitkudos&contributor=5&reward=5)
