@@ -65,6 +65,17 @@ export interface User {
 	site_admin: boolean;
 }
 
+export interface Contributor {
+	login: string;
+	name: string;
+	avatarUrl: string;
+	email: string;
+	twitter?: string;
+	discord?: string;
+	checked: boolean;
+	numberOfContributions: number;
+}
+
 export interface Parent {
 	sha: string;
 	url: string;
@@ -135,4 +146,17 @@ export interface Badge {
 	color?: string;
 	cacheSeconds?: number;
 	link?: string;
+}
+export interface RewardAmount {
+	contributor: Contributor;
+	amount: number;
+	token: Balance;
+}
+
+export interface Balance {
+	decimals: number;
+	symbol: string;
+	amount: number;
+	address: string;
+	chainId: string;
 }

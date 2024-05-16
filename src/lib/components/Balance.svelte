@@ -1,21 +1,33 @@
 <script lang="ts">
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
+	import { balances } from '$lib/services/balances';
+	import type { Balance } from '$lib/types';
 
-	import { balances } from '$lib/socketTech';
+	export let token: Balance;
+	export let amount: number = 0;
 
-	export let token: BalanceResult;
-	let selected: BalanceResult;
+	let selected: Balance;
+	let sortedBalance: Balance[];
+	balances.subscribe((value) => {
+		sortedBalance = $balances.sort((a, b) => (a.symbol < b.symbol ? -1 : 1));
+		selected = value[0];
+		token = value[0];
+	});
 
-	$: sortedBalance = $balances.sort((a, b) => (a.symbol < b.symbol ? -1 : 1));
-	// set the first balance as selected once the balances is loaded
-	$: if (sortedBalance.length > 0 && !selected) {
-		selected = sortedBalance[0];
-		token = sortedBalance[0];
-	}
+	const setMax = () => {
+		amount = selected?.amount || 0;
+	};
+	const onChangeToken = () => {
+		token = selected;
+		amount = 0;
+	};
 </script>
 
-<select class={$$props.class} bind:value={selected} on:change={() => (token = selected)}>
-	{#each sortedBalance as balance}
-		<option value={balance}>{balance.symbol}</option>
-	{/each}
-</select>
+<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+	<button class="input-group-shim" on:click={setMax}>Max</button>
+	<input placeholder="Reward amount" bind:value={amount} type="number" step="any" min="0" />
+	<select bind:value={selected} on:change={onChangeToken}>
+		{#each sortedBalance as balance}
+			<option value={balance}>{balance.symbol} </option>
+		{/each}
+	</select>
+</div>

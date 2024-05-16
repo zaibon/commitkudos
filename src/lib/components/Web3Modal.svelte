@@ -1,19 +1,16 @@
 <script lang="ts">
-	import { CHAIN_DETAILS } from '@squirrel-labs/peanut-sdk';
-
+	import { address, chainInfo, isConnected, modal } from '$lib/services/wallet';
 	import { shortAddress } from '$lib/strings';
-	import { getAccountStores, open } from '$lib/wallet';
-
-	const { isConnected, address, chainId } = getAccountStores();
-	$: network = CHAIN_DETAILS[$chainId];
 
 	async function connect() {
-		open();
+		modal.open();
 	}
 </script>
 
 <span>
-	{network?.name ?? ''}
+	{#if $chainInfo}
+		{$chainInfo?.name ?? ''}
+	{/if}
 </span>
 <button class="btn btn-sm variant-ghost-surface" on:click={connect}>
 	{#if $isConnected}

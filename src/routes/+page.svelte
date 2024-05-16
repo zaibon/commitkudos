@@ -1,33 +1,42 @@
 <script lang="ts">
 	import { getToastStore } from '@skeletonlabs/skeleton';
-	import type { BalanceResult } from '@socket.tech/socket-v2-sdk';
 	import debounce from 'just-debounce';
 	import { onDestroy, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	import { page } from '$app/stores';
-	import Balance from '$lib/components/Balance.svelte';
-	import { createLinks } from '$lib/peanutes';
-	import type { Author, CommitDetail, Email, User } from '$lib/types';
-	import { getAccountStores, open } from '$lib/wallet';
+	import BalanceInput from '$lib/components/Balance.svelte';
+	import { createLinks } from '$lib/services/peanut';
+	import { chainId, isConnected, modal, signer } from '$lib/services/wallet';
+	import type { Author, Balance, CommitDetail, Email, User } from '$lib/types';
 
-	const { isConnected, chainId, getSigner } = getAccountStores();
+	import type { Snapshot } from './$types';
+
+	export const snapshot: Snapshot<string> = {
+		capture: () => JSON.stringify({ repository, contributorsNr, rewardAmount }),
+		restore: (value) => {
+			let data = JSON.parse(value);
+			repository = data.repository;
+			contributorsNr = data.contributorsNr;
+			rewardAmount = data.rewardAmount;
+		}
+	};
 
 	const toastStore = getToastStore();
 
 	// export let data: PageData;
 	let repository: string | null = $page.url.searchParams.get('repository');
-	let contributorsNr: number | null = $page.url.searchParams.has('contributor')
+	let contributorsNr: number = $page.url.searchParams.has('contributor')
 		? parseInt($page.url.searchParams.get('contributor') ?? '0')
-		: null;
-	let rewardAmount: number | null = $page.url.searchParams.has('reward')
+		: 0;
+	let rewardAmount: number = $page.url.searchParams.has('reward')
 		? parseFloat($page.url.searchParams.get('reward') ?? '0')
-		: null;
+		: 0;
 
 	let creatingLinks = false;
 	let top: string[] = [];
 	let selectedContributors: Author[] = [];
-	let selectedToken: BalanceResult;
+	let selectedToken: Balance;
 	let links: { link: string; txHash: string }[] = [];
 	const byLogin: Map<string, { user: User; author: Author }> = new Map();
 
@@ -38,7 +47,7 @@
 	onMount(() => {
 		topContributors();
 		rol = window.setInterval(() => {
-			if (index === greetings.length - 1) index = 0;
+			if (index === greetings.length - 1) clearInterval(rol);
 			else index++;
 		}, 1250);
 	});
@@ -104,7 +113,7 @@
 
 	const createLink = async () => {
 		if (!$isConnected || !$chainId) {
-			await open();
+			await modal.open();
 			return;
 		}
 
@@ -123,23 +132,24 @@
 			autohide: false
 		});
 		try {
-			const signer = getSigner();
-			if (signer) {
-				links = await createLinks(
-					signer,
-					$chainId,
-					rewardAmount,
-					selectedContributors.length,
-					selectedToken.address
-				);
+			if ($signer) {
+				await createLinks({
+					signer: $signer,
+					chainId: $chainId,
+					amount: rewardAmount,
+					numberOfLinks: selectedContributors.length,
+					token: selectedToken
+				});
+			} else {
+				console.log('wallet client not found');
 			}
 			toastStore.close(toastId);
 		} catch (error) {
-			console.log(error);
 			toastStore.trigger({
 				message: 'failed to generate rewards',
 				background: 'variant-filled-warning'
 			});
+			console.log(error);
 		} finally {
 			toastStore.close(toastId);
 			creatingLinks = false;
@@ -206,15 +216,7 @@
 			/>
 			{#if top.length > 0}
 				<div class="flex flex-row row mb-2">
-					<input
-						bind:value={rewardAmount}
-						class="input"
-						type="number"
-						step="any"
-						min="0"
-						placeholder="reward amount"
-					/>
-					<Balance bind:token={selectedToken} />
+					<BalanceInput bind:token={selectedToken} bind:amount={rewardAmount} />
 				</div>
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>
@@ -263,9 +265,6 @@
 							In progress ...
 						{/if}
 					</button>
-					<button class="btn variant-outline-primary w-full" disabled
-						>save recurring (coming soon)</button
-					>
 				</div>
 			{:else if links.length > 0}
 				<button on:click={sendEmails} class="btn variant-filled-primary w-full" type="submit">
