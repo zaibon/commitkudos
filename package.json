@@ -40,11 +40,13 @@
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.3",
 		"vite": "^5.0.0",
-		"vite-plugin-tailwind-purgecss": "0.2.0"
+		"vite-plugin-tailwind-purgecss": "0.2.0",
+		"vitest": "^1.6.0"
 	},
 	"type": "module",
 	"dependencies": {
 		"@ankr.com/ankr.js": "^0.5.0",
+		"@covalenthq/client-sdk": "^1.0.2",
 		"@floating-ui/dom": "1.6.5",
 		"@sentry/sveltekit": "^7.107.0",
 		"@squirrel-labs/peanut-sdk": "^0.4.14",
