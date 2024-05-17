@@ -10,6 +10,7 @@ import {
 	goerli,
 	linea,
 	mainnet,
+	moonbeam,
 	optimism,
 	polygon,
 	polygonMumbai,
@@ -19,6 +20,7 @@ import { type Chain } from 'viem/chains';
 
 const chains = [
 	mainnet,
+	moonbeam,
 	goerli,
 	optimism,
 	bsc,
