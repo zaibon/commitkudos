@@ -46,13 +46,13 @@
 	"dependencies": {
 		"@ankr.com/ankr.js": "^0.5.0",
 		"@floating-ui/dom": "1.6.5",
-		"@sentry/sveltekit": "^7.107.0",
-		"@squirrel-labs/peanut-sdk": "^0.4.14",
+		"@sentry/sveltekit": "^8.2.1",
+		"@squirrel-labs/peanut-sdk": "^0.4.42",
 		"@vercel/analytics": "^1.2.2",
 		"@web3modal/ethers5": "^4.1.1",
 		"emailjs": "^4.0.3",
 		"ethers": "5.7.2",
 		"just-debounce": "^1.1.0",
-		"viem": "^2.8.10"
+		"viem": "^2.11.0"
 	}
 }
