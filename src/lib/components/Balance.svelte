@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 
 	import { balances } from '#lib/services/balances.svelte.ts';
+	import { PRICE_SOURCE, prices } from '#lib/services/prices.svelte.ts';
 	import { wallet } from '#lib/services/wallet.svelte.ts';
 	import type { Balance } from '#lib/types.ts';
 
@@ -25,6 +26,17 @@
 			}
 		});
 	});
+
+	const price = $derived(prices.eur(token));
+	const amountEur = $derived(price !== undefined && amount > 0 ? amount * price : undefined);
+	const balanceEur = $derived(price !== undefined && token ? token.amount * price : undefined);
+
+	const eurFormat = new Intl.NumberFormat(undefined, {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	});
+	const formatEur = (value: number) =>
+		value > 0 && value < 0.01 ? '< 0.01 €' : `${eurFormat.format(value)} €`;
 
 	const setMax = () => {
 		amount = token?.amount ?? 0;
@@ -66,3 +78,14 @@
 		{/each}
 	</select>
 </div>
+{#if price !== undefined}
+	<div
+		class="flex w-full justify-between gap-2 px-1 text-xs opacity-70"
+		title="Approximate value based on {PRICE_SOURCE} prices, refreshed every few minutes"
+	>
+		<span>{amountEur !== undefined ? `≈ ${formatEur(amountEur)}` : ''}</span>
+		{#if balanceEur !== undefined}
+			<span>Balance ≈ {formatEur(balanceEur)}</span>
+		{/if}
+	</div>
+{/if}
