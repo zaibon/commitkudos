@@ -57,6 +57,7 @@
 <div class="field-group w-full grid-cols-[1fr_auto_auto]">
 	<input
 		{id}
+		aria-label={id ? undefined : 'Reward amount'}
 		class="input"
 		placeholder="0.00"
 		bind:value={amount}

@@ -341,12 +341,12 @@
 						</li>
 					{/each}
 				</ul>
-				<div class="mt-2 flex items-center justify-between text-sm text-surface-600-400">
+				<div class="mt-2 flex items-center justify-between gap-3 text-sm text-surface-600-400">
 					<span>{selected.length} of {top.length} selected · commits of the last 30 days</span>
 					{#if !locked}
 						<button
 							type="button"
-							class="anchor"
+							class="anchor whitespace-nowrap"
 							onclick={() => setAllSelected(selected.length < top.length)}
 						>
 							{selected.length < top.length ? 'Select all' : 'Select none'}

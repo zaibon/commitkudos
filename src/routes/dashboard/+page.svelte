@@ -200,7 +200,7 @@
 	<meta property="og:title" content="Advanced rewards · CommitKudos" />
 </svelte:head>
 
-<div class="grid flex-1 items-start gap-8 lg:grid-cols-[22rem_1fr]">
+<div class="grid flex-1 grid-cols-1 items-start gap-8 lg:grid-cols-[22rem_minmax(0,1fr)]">
 	<aside
 		class="space-y-6 rounded-container border border-surface-200-800 bg-surface-50-950/70 p-5 shadow-xl backdrop-blur-sm lg:sticky lg:top-24"
 	>
@@ -387,7 +387,10 @@
 		{/if}
 
 		{#if repoState.status === 'loading'}
-			<div class="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3" aria-label="Loading contributors">
+			<div
+				class="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3"
+				aria-label="Loading contributors"
+			>
 				{#each { length: 6 }, i (i)}
 					<div
 						class="flex animate-pulse items-start gap-3 rounded-container border border-surface-200-800 p-4"
@@ -419,7 +422,7 @@
 		{:else if visible.length === 0}
 			<p class="py-10 text-center text-surface-600-400">No contributor matches “{filter}”.</p>
 		{:else}
-			<div class="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
 				{#each visible as { contributor, index } (contributor.login || contributor.email)}
 					<ContributorCard
 						bind:contributor={contributors[index]}

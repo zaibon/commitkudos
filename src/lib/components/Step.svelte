@@ -51,7 +51,7 @@
 			{number}
 		{/if}
 	</div>
-	<header class="flex min-h-8 items-center justify-between gap-3">
+	<header class="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-2">
 		<h2 class="font-semibold {status === 'pending' ? 'text-surface-500' : ''}">{title}</h2>
 		{@render aside?.()}
 	</header>

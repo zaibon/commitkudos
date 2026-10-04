@@ -27,7 +27,7 @@
 	let link = $derived(badgeLink(badge.badgeContent));
 </script>
 
-<div class="grid items-start gap-8 lg:grid-cols-[1fr_28rem]">
+<div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_28rem]">
 	<div
 		class="rounded-container border border-surface-200-800 bg-surface-50-950/70 p-5 shadow-xl backdrop-blur-sm sm:p-8"
 	>
