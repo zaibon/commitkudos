@@ -146,7 +146,12 @@
 	};
 </script>
 
-<div class="container mx-auto flex h-full items-center justify-center">
+<svelte:head>
+	<title>CommitKudos · Reward your top open-source contributors</title>
+	<meta property="og:title" content="CommitKudos" />
+</svelte:head>
+
+<div class="flex flex-1 items-center justify-center">
 	<div class="flex w-full max-w-xl flex-col items-center space-y-10 text-center">
 		<h2 class="h2">
 			{#key index}
@@ -246,9 +251,5 @@
 				</details>
 			{/if}
 		</form>
-	</div>
-
-	<div class="fixed right-4 bottom-4">
-		<a href="/dashboard" class="btn preset-tonal-tertiary"> Expert mode </a>
 	</div>
 </div>

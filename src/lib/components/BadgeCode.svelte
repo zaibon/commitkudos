@@ -30,7 +30,7 @@
 				<pre class="pre pr-16 break-all whitespace-pre-wrap">{code}</pre>
 				<button
 					type="button"
-					class="absolute top-2 right-2 btn preset-tonal btn-sm"
+					class="absolute top-2 right-2 btn bg-white/10 text-white btn-sm hover:bg-white/20"
 					onclick={() => copy(code)}
 				>
 					Copy

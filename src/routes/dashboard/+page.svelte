@@ -110,7 +110,12 @@
 	}, 300);
 </script>
 
-<div class="flex flex-col gap-4 lg:flex-row">
+<svelte:head>
+	<title>Advanced rewards · CommitKudos</title>
+	<meta property="og:title" content="Advanced rewards · CommitKudos" />
+</svelte:head>
+
+<div class="flex flex-1 flex-col gap-4 lg:flex-row">
 	<section class="w-full p-1 lg:w-1/3">
 		<form class="w-full" onsubmit={(e) => e.preventDefault()}>
 			<div class="field-group grid-cols-[auto_1fr]">
@@ -203,7 +208,4 @@
 			</div>
 		{/if}
 	</section>
-	<div class="fixed right-4 bottom-4">
-		<a href="/" class="btn preset-tonal-tertiary"> Simple mode </a>
-	</div>
 </div>
