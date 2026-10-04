@@ -8,10 +8,18 @@
 
 	let {
 		token = $bindable(),
-		amount = $bindable(0)
+		amount = $bindable(0),
+		id,
+		disabled = false,
+		recipients = 1
 	}: {
 		token?: Balance;
 		amount?: number;
+		/** id of the amount input, to attach a <label> */
+		id?: string;
+		disabled?: boolean;
+		/** the amount is sent to each recipient: "Max" splits the balance between them */
+		recipients?: number;
 	} = $props();
 
 	const sameToken = (a?: Balance, b?: Balance) =>
@@ -31,9 +39,12 @@
 	const amountValue = $derived(price !== undefined && amount > 0 ? amount * price : undefined);
 	const balanceValue = $derived(price !== undefined && token ? token.amount * price : undefined);
 	const format = (value: number) => formatPrice(value, prices.currency);
+	const formatToken = new Intl.NumberFormat('en', { maximumFractionDigits: 6 }).format;
 
 	const setMax = () => {
-		amount = token?.amount ?? 0;
+		// round down so the total never exceeds the balance
+		const precision = 10 ** Math.min(token?.decimals ?? 6, 6);
+		amount = Math.floor(((token?.amount ?? 0) / Math.max(recipients, 1)) * precision) / precision;
 	};
 
 	const onChangeToken = (event: Event) => {
@@ -43,22 +54,33 @@
 	};
 </script>
 
-<div class="field-group w-full grid-cols-[auto_1fr_auto]">
-	<button type="button" class="btn preset-tonal" onclick={setMax} disabled={!token}>Max</button>
+<div class="field-group w-full grid-cols-[1fr_auto_auto]">
 	<input
+		{id}
 		class="input"
-		placeholder="Reward amount"
+		placeholder="0.00"
 		bind:value={amount}
 		type="number"
+		inputmode="decimal"
 		step="any"
 		min="0"
-		max={token?.amount}
+		max={token ? token.amount / Math.max(recipients, 1) : undefined}
+		{disabled}
 	/>
+	<button
+		type="button"
+		class="btn preset-tonal text-xs font-semibold uppercase"
+		onclick={setMax}
+		disabled={disabled || !token}
+	>
+		Max
+	</button>
 	<select
 		class="select w-auto"
 		value={token?.address}
 		onchange={onChangeToken}
-		disabled={balances.list.length === 0}
+		aria-label="Token"
+		disabled={disabled || balances.list.length === 0}
 	>
 		{#if !wallet.isConnected}
 			<option value={undefined}>Connect wallet</option>
@@ -72,14 +94,20 @@
 		{/each}
 	</select>
 </div>
-{#if price !== undefined}
+{#if token}
 	<div
-		class="flex w-full justify-between gap-2 px-1 text-xs opacity-70"
-		title="Approximate value based on {PRICE_SOURCE} prices, refreshed every few minutes"
+		class="mt-1 flex w-full justify-between gap-2 text-xs text-surface-600-400"
+		title={price !== undefined
+			? `Approximate value based on ${PRICE_SOURCE} prices, refreshed every few minutes`
+			: undefined}
 	>
-		<span>{amountValue !== undefined ? `≈ ${format(amountValue)}` : ''}</span>
-		{#if balanceValue !== undefined}
-			<span>Balance ≈ {format(balanceValue)}</span>
-		{/if}
+		<span class="tabular-nums">{amountValue !== undefined ? `≈ ${format(amountValue)}` : ''}</span>
+		<span>
+			Balance: <span class="tabular-nums">{formatToken(token.amount)}</span>
+			{token.symbol}
+			{#if balanceValue !== undefined}
+				<span class="tabular-nums">(≈ {format(balanceValue)})</span>
+			{/if}
+		</span>
 	</div>
 {/if}

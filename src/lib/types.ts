@@ -77,6 +77,15 @@ export interface Contributor {
 	reward?: { amount: number; token?: Balance };
 }
 
+export interface RepoInfo {
+	fullName: string;
+	description: string;
+	avatarUrl: string;
+	htmlUrl: string;
+	stars: number;
+	forks: number;
+}
+
 export interface Parent {
 	sha: string;
 	url: string;
