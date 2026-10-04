@@ -1,33 +1,68 @@
 <script lang="ts">
-	import { balances } from '$lib/services/balances';
-	import type { Balance } from '$lib/types';
+	import { untrack } from 'svelte';
 
-	export let token: Balance;
-	export let amount: number = 0;
+	import { balances } from '#lib/services/balances.svelte.ts';
+	import { wallet } from '#lib/services/wallet.svelte.ts';
+	import type { Balance } from '#lib/types.ts';
 
-	let selected: Balance;
-	let sortedBalance: Balance[];
-	balances.subscribe((value) => {
-		sortedBalance = $balances.sort((a, b) => (a.symbol < b.symbol ? -1 : 1));
-		selected = value[0];
-		token = value[0];
+	let {
+		token = $bindable(),
+		amount = $bindable(0)
+	}: {
+		token?: Balance;
+		amount?: number;
+	} = $props();
+
+	const sameToken = (a?: Balance, b?: Balance) =>
+		!!a && !!b && a.address === b.address && a.chainId === b.chainId;
+
+	// default to the first token, and reset when the selected token disappears (chain/account switch)
+	$effect(() => {
+		const list = balances.list;
+		untrack(() => {
+			if (!list.some((b) => sameToken(b, token))) {
+				token = list[0];
+			}
+		});
 	});
 
 	const setMax = () => {
-		amount = selected?.amount || 0;
+		amount = token?.amount ?? 0;
 	};
-	const onChangeToken = () => {
-		token = selected;
+
+	const onChangeToken = (event: Event) => {
+		const address = (event.currentTarget as HTMLSelectElement).value;
+		token = balances.list.find((b) => b.address === address);
 		amount = 0;
 	};
 </script>
 
-<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-	<button class="input-group-shim" on:click={setMax}>Max</button>
-	<input placeholder="Reward amount" bind:value={amount} type="number" step="any" min="0" />
-	<select bind:value={selected} on:change={onChangeToken}>
-		{#each sortedBalance as balance}
-			<option value={balance}>{balance.symbol} </option>
+<div class="field-group w-full grid-cols-[auto_1fr_auto]">
+	<button type="button" class="btn preset-tonal" onclick={setMax} disabled={!token}>Max</button>
+	<input
+		class="input"
+		placeholder="Reward amount"
+		bind:value={amount}
+		type="number"
+		step="any"
+		min="0"
+		max={token?.amount}
+	/>
+	<select
+		class="select w-auto"
+		value={token?.address}
+		onchange={onChangeToken}
+		disabled={balances.list.length === 0}
+	>
+		{#if !wallet.isConnected}
+			<option value={undefined}>Connect wallet</option>
+		{:else if balances.loading && balances.list.length === 0}
+			<option value={undefined}>Loading…</option>
+		{:else if balances.list.length === 0}
+			<option value={undefined}>No funds</option>
+		{/if}
+		{#each balances.list as balance (balance.address)}
+			<option value={balance.address}>{balance.symbol}</option>
 		{/each}
 	</select>
 </div>

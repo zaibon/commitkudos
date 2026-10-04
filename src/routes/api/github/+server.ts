@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 
-import { listCommits } from '$lib/services/github';
+import { listCommits } from '#lib/services/github.ts';
 
 import type { RequestHandler } from './$types';
 
@@ -20,7 +20,8 @@ export const GET: RequestHandler = async ({ url }) => {
 		const commits = await listCommits(owner, name, since);
 		return json(commits);
 	} catch (err) {
-		console.log((err as Error).message);
-		error(500, err as Error);
+		const message = (err as Error).message;
+		console.log(message);
+		error(message.includes('not found') ? 404 : 500, message);
 	}
 };

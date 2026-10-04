@@ -1,24 +1,41 @@
 <script lang="ts">
-	import { CodeBlock, Tab, TabGroup } from '@skeletonlabs/skeleton';
+	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 
-	export let imageURL: string | undefined;
-	export let link: string | undefined;
+	import { toaster } from '#lib/toaster.ts';
 
-	let tabSet = 0;
+	let { imageURL, link }: { imageURL?: string; link?: string } = $props();
 
-	$: html = `<a href="${link}" target="_blank"><img src="${imageURL}"</a>`;
-	$: markdown = `[![commitKudosBadge](${imageURL})](${link})`;
+	let tab = $state('html');
+
+	let snippets = $derived({
+		html: `<a href="${link}" target="_blank"><img src="${imageURL}" alt="CommitKudos badge" /></a>`,
+		markdown: `[![commitKudosBadge](${imageURL})](${link})`
+	});
+
+	async function copy(code: string) {
+		await navigator.clipboard.writeText(code);
+		toaster.success({ title: 'Copied to clipboard', duration: 1500 });
+	}
 </script>
 
-<TabGroup>
-	<Tab bind:group={tabSet} name="html" value={0}>HTML</Tab>
-	<Tab bind:group={tabSet} name="markdown" value={1}>Markdown</Tab>
-	<!-- Tab Panels --->
-	<svelte:fragment slot="panel">
-		{#if tabSet === 0}
-			<CodeBlock language="html" code={html} />
-		{:else if tabSet === 1}
-			<CodeBlock language="markdown" code={markdown} />
-		{/if}
-	</svelte:fragment>
-</TabGroup>
+<Tabs value={tab} onValueChange={(e) => (tab = e.value)}>
+	<Tabs.List>
+		<Tabs.Trigger value="html">HTML</Tabs.Trigger>
+		<Tabs.Trigger value="markdown">Markdown</Tabs.Trigger>
+		<Tabs.Indicator />
+	</Tabs.List>
+	{#each Object.entries(snippets) as [name, code] (name)}
+		<Tabs.Content value={name}>
+			<div class="relative">
+				<pre class="pre pr-16 break-all whitespace-pre-wrap">{code}</pre>
+				<button
+					type="button"
+					class="absolute top-2 right-2 btn preset-tonal btn-sm"
+					onclick={() => copy(code)}
+				>
+					Copy
+				</button>
+			</div>
+		</Tabs.Content>
+	{/each}
+</Tabs>

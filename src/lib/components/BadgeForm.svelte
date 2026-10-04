@@ -1,32 +1,16 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import type { Badge } from '#lib/types.ts';
 
-	import type { Badge } from '$lib/types';
-
-	const dispatch = createEventDispatcher();
-
-	const badge: Badge = {
-		badgeContent: '',
-		style: 'flat',
-		logo: '',
-		logoColor: '',
-		label: '',
-		labelColor: '',
-		color: '',
-		cacheSeconds: 3600
-	};
-	$: if (badge) {
-		dispatch('input', badge);
-	}
+	let { badge = $bindable() }: { badge: Badge } = $props();
 </script>
 
-<form>
+<form class="space-y-3" onsubmit={(e) => e.preventDefault()}>
 	<label class="label">
-		<span>Repository</span>
+		<span class="label-text">Repository</span>
 		<input type="text" class="input" placeholder="owner/name" bind:value={badge.badgeContent} />
 	</label>
 	<label class="label">
-		<span>Background Color</span>
+		<span class="label-text">Background Color</span>
 		<input
 			type="text"
 			class="input"
@@ -35,7 +19,7 @@
 		/>
 	</label>
 	<label class="label">
-		<span>Style</span>
+		<span class="label-text">Style</span>
 		<select class="select" bind:value={badge.style}>
 			<option value="flat">flat</option>
 			<option value="flat-square">flat-square</option>
@@ -45,11 +29,13 @@
 		</select>
 	</label>
 	<label class="label">
-		<span>Logo from <a class="underline" href="https://simpleicons.org/">simpleicons</a></span>
+		<span class="label-text">
+			Logo from <a class="anchor" href="https://simpleicons.org/" target="_blank">simpleicons</a>
+		</span>
 		<input type="text" class="input" placeholder="github" bind:value={badge.logo} />
 	</label>
 	<label class="label">
-		<span>Logo Color</span>
+		<span class="label-text">Logo Color</span>
 		<input
 			type="text"
 			class="input"
@@ -58,11 +44,11 @@
 		/>
 	</label>
 	<label class="label">
-		<span>Label</span>
+		<span class="label-text">Label</span>
 		<input type="text" class="input" placeholder="Give kudos" bind:value={badge.label} />
 	</label>
 	<label class="label">
-		<span>Label Color</span>
+		<span class="label-text">Label Color</span>
 		<input
 			type="text"
 			class="input"

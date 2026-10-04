@@ -10,9 +10,18 @@
 		<meta name="msapplication-TileColor" content="#da532c" />
 		<meta name="theme-color" content="#ffffff" />
 		<meta name="viewport" content="width=device-width" />
+		<script>
+			// apply the stored light/dark mode before first paint (see LightSwitch.svelte)
+			try {
+				const mode = localStorage.getItem('modeCurrent');
+				if (mode) document.documentElement.classList.toggle('dark', mode === 'dark');
+			} catch {
+				// storage unavailable
+			}
+		</script>
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover" data-theme="skeleton">
+	<body data-sveltekit-preload-data="hover" data-theme="legacy">
 		<div style="display: contents" class="h-full overflow-hidden">%sveltekit.body%</div>
 	</body>
 </html>
