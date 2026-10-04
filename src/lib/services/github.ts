@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { GITHUB_TOKEN } from '$app/env/private';
 
 import type { CommitDetail } from '../types';
 
@@ -7,13 +7,17 @@ export async function listCommits(
 	name: string,
 	since?: string
 ): Promise<CommitDetail[]> {
-	let url = `https://api.github.com/repos/${owner}/${name}/commits`;
+	const url = new URL(
+		`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/commits`
+	);
+	url.searchParams.set('per_page', '100');
 	if (since) {
-		url += `?since=${since}`;
+		url.searchParams.set('since', since);
 	}
 	const resp = await fetch(url, {
 		headers: {
-			Authorization: `bearer ${env.GITHUB_TOKEN}`
+			Accept: 'application/vnd.github+json',
+			...(GITHUB_TOKEN ? { Authorization: `Bearer ${GITHUB_TOKEN}` } : {})
 		}
 	});
 

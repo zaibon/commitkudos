@@ -1,205 +1,166 @@
 <script lang="ts">
-	import { getToastStore } from '@skeletonlabs/skeleton';
 	import debounce from 'just-debounce';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	import { page } from '$app/stores';
-	import BalanceInput from '$lib/components/Balance.svelte';
-	import { createLinks } from '$lib/services/peanut';
-	import { chainId, isConnected, modal, signer } from '$lib/services/wallet';
-	import type { Author, Balance, CommitDetail, Email, User } from '$lib/types';
+	import BalanceInput from '#lib/components/Balance.svelte';
+	import { loadContributors } from '#lib/contributors.ts';
+	import { createRewardLinks, sendRewardEmails } from '#lib/services/reward.ts';
+	import { modal, wallet } from '#lib/services/wallet.svelte.ts';
+	import { toaster } from '#lib/toaster.ts';
+	import type { Balance, Contributor } from '#lib/types.ts';
+	import { page } from '$app/state';
 
 	import type { Snapshot } from './$types';
 
 	export const snapshot: Snapshot<string> = {
 		capture: () => JSON.stringify({ repository, contributorsNr, rewardAmount }),
 		restore: (value) => {
-			let data = JSON.parse(value);
+			const data = JSON.parse(value);
 			repository = data.repository;
 			contributorsNr = data.contributorsNr;
 			rewardAmount = data.rewardAmount;
+			topContributors();
 		}
 	};
 
-	const toastStore = getToastStore();
+	const params = page.url.searchParams;
+	let repository = $state(params.get('repository') ?? '');
+	let contributorsNr = $state(parseInt(params.get('contributor') ?? '') || undefined);
+	let rewardAmount = $state(parseFloat(params.get('reward') ?? '') || 0);
 
-	// export let data: PageData;
-	let repository: string | null = $page.url.searchParams.get('repository');
-	let contributorsNr: number = $page.url.searchParams.has('contributor')
-		? parseInt($page.url.searchParams.get('contributor') ?? '0')
-		: 0;
-	let rewardAmount: number = $page.url.searchParams.has('reward')
-		? parseFloat($page.url.searchParams.get('reward') ?? '0')
-		: 0;
+	let selectedToken = $state<Balance>();
+	let top = $state<Contributor[]>([]);
+	let selectedContributors = $derived(top.filter((c) => c.checked));
 
-	let creatingLinks = false;
-	let top: string[] = [];
-	let selectedContributors: Author[] = [];
-	let selectedToken: Balance;
-	let links: { link: string; txHash: string }[] = [];
-	const byLogin: Map<string, { user: User; author: Author }> = new Map();
+	let creatingLinks = $state(false);
+	let sendingEmails = $state(false);
+	let emailsSent = $state(false);
+	// contributors are snapshotted when the links are created so links[i] always matches rewarded[i]
+	let rewarded = $state<Contributor[]>([]);
+	let links = $state<string[]>([]);
 
-	let greetings = ['Find', 'Reward', 'Support'];
-	let index = 0;
-	let rol: number;
+	const greetings = ['Find', 'Reward', 'Support'];
+	let index = $state(0);
 
 	onMount(() => {
 		topContributors();
-		rol = window.setInterval(() => {
-			if (index === greetings.length - 1) clearInterval(rol);
+		const interval = window.setInterval(() => {
+			if (index === greetings.length - 1) clearInterval(interval);
 			else index++;
 		}, 1250);
+		return () => clearInterval(interval);
 	});
 
-	onDestroy(() => {
-		clearInterval(rol);
-	});
+	function resetRewards() {
+		links = [];
+		rewarded = [];
+		emailsSent = false;
+	}
 
 	const topContributors = debounce(async () => {
-		selectedContributors = [];
 		top = [];
-
-		const since = new Date();
-		since.setDate(since.getDate() - 30);
+		resetRewards();
 
 		if (!repository || !contributorsNr) {
 			return;
 		}
-		let [owner, name] = repository.split('/', 2);
+		const [owner, name] = repository.split('/', 2);
 		if (!owner || !name) {
 			return;
 		}
 
-		const toastId = toastStore.trigger({
-			message: 'Searching top contributors'
-		});
-
-		const resp = await fetch(`/api/github?repository=${repository}&since=${since.toISOString()}`);
-		if (resp.status != 200) {
-			toastStore.close(toastId);
-			return;
-		}
-		const commits = await resp.json();
-
-		toastStore.close(toastId);
-
-		byLogin.clear();
-		let contributors: Map<string, number> = new Map();
-		commits.forEach((commit: CommitDetail) => {
-			byLogin.set(commit.commit.author.name, {
-				author: commit.commit.author,
-				user: commit.author
-			});
-
-			const nr = contributors.get(commit.commit.author.name);
-			if (!nr) {
-				contributors.set(commit.commit.author.name, 1);
-			} else {
-				contributors.set(commit.commit.author.name, nr + 1);
+		const toastId = toaster.create({ type: 'loading', title: 'Searching top contributors' });
+		try {
+			const contributors = await loadContributors(repository);
+			top = contributors.slice(0, contributorsNr).map((c) => ({ ...c, checked: true }));
+			if (top.length === 0) {
+				toaster.warning({ title: `No contributions found for ${repository} in the last 30 days` });
 			}
-		});
-		const byContributions = new Map([...contributors.entries()].sort((a, b) => b[1] - a[1]));
-		let tmp = [...byContributions.keys()].slice(0, contributorsNr);
-		top = tmp;
-		for (let i = 0; i < top.length; i++) {
-			const name = top[i];
-			const author = byLogin.get(name)?.author;
-			if (author) {
-				selectedContributors = [...selectedContributors, author];
-			}
+		} finally {
+			toaster.dismiss(toastId);
 		}
 	}, 500);
 
 	const createLink = async () => {
-		if (!$isConnected || !$chainId) {
+		if (!wallet.isConnected || !wallet.chainId) {
 			await modal.open();
 			return;
 		}
-
 		if (!rewardAmount) {
-			toastStore.trigger({
-				message: 'Specifiy a reward amount before generating the links',
-				background: 'variant-filled-warning',
-				timeout: 2000
+			toaster.warning({
+				title: 'Specify a reward amount before generating the links',
+				duration: 2000
 			});
 			return;
 		}
+		if (!selectedToken) {
+			toaster.warning({ title: 'Select a token to reward with', duration: 2000 });
+			return;
+		}
+		if (selectedContributors.length === 0) {
+			toaster.warning({ title: 'Select at least one contributor', duration: 2000 });
+			return;
+		}
+		if (!wallet.signer) {
+			toaster.error({ title: 'Wallet signer not available' });
+			return;
+		}
+
 		creatingLinks = true;
-		const toastId = toastStore.trigger({
-			message: 'Rewards are being created',
-			background: 'variant-filled-primary',
-			autohide: false
-		});
+		const toastId = toaster.create({ type: 'loading', title: 'Rewards are being created' });
 		try {
-			if ($signer) {
-				await createLinks({
-					signer: $signer,
-					chainId: $chainId,
-					amount: rewardAmount,
-					numberOfLinks: selectedContributors.length,
-					token: selectedToken
-				});
-			} else {
-				console.log('wallet client not found');
-			}
-			toastStore.close(toastId);
-		} catch (error) {
-			toastStore.trigger({
-				message: 'failed to generate rewards',
-				background: 'variant-filled-warning'
+			const recipients = $state.snapshot(selectedContributors);
+			links = await createRewardLinks({
+				signer: wallet.signer,
+				chainId: wallet.chainId,
+				rewardAmount,
+				selectedToken,
+				contributors: recipients
 			});
-			console.log(error);
+			rewarded = recipients;
+			toaster.success({ title: `${links.length} reward link(s) created` });
+		} catch (error) {
+			console.error(error);
+			toaster.error({ title: 'Failed to generate rewards', description: (error as Error).message });
 		} finally {
-			toastStore.close(toastId);
+			toaster.dismiss(toastId);
 			creatingLinks = false;
 		}
 	};
 
 	const sendEmails = async () => {
-		const toastId = toastStore.trigger({
-			message: 'Sending emails',
-			background: 'variant-filled-primary',
-			autohide: false
-		});
-		const promises = selectedContributors.map((contributor, i) => {
-			const link = links[i];
-			if (!repository || !contributor || !link) {
-				return;
-			}
-			const email: Email = {
-				name: contributor.name,
-				// email: contributor.email,
-				email: 'christophe.dcpm@gmail.com',
-				link: link.link,
-				message: '',
-				repoName: repository
-			};
-
-			console.log('send email:', { ...email });
-			return fetch(`/api/mail`, {
-				method: 'POST',
-				body: JSON.stringify(email)
-			});
-		});
-		await Promise.all(promises);
-		toastStore.close(toastId);
+		sendingEmails = true;
+		const toastId = toaster.create({ type: 'loading', title: 'Sending emails' });
+		try {
+			await sendRewardEmails(rewarded, links, repository);
+			emailsSent = true;
+			toaster.success({ title: 'Emails sent' });
+		} catch (error) {
+			console.error(error);
+			toaster.error({ title: 'Failed to send emails', description: (error as Error).message });
+		} finally {
+			toaster.dismiss(toastId);
+			sendingEmails = false;
+		}
 	};
 </script>
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-10 text-center flex flex-col items-center">
+<div class="container mx-auto flex h-full items-center justify-center">
+	<div class="flex w-full max-w-xl flex-col items-center space-y-10 text-center">
 		<h2 class="h2">
-			<div style="display: inline">
-				<bold transition:slide>{greetings[index]}</bold> your top contributors
-			</div>
+			{#key index}
+				<b class="inline-block" in:slide>{greetings[index]}</b>
+			{/key}
+			your top contributors
 		</h2>
-		<form>
-			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-				<div class="input-group-shim">https://github.com/</div>
+		<form class="w-full space-y-2" onsubmit={(e) => e.preventDefault()}>
+			<div class="field-group grid-cols-[auto_1fr]">
+				<span class="label preset-tonal">https://github.com/</span>
 				<input
+					class="input"
 					bind:value={repository}
-					on:input={topContributors}
+					oninput={topContributors}
 					type="text"
 					id="repository"
 					placeholder="owner/name"
@@ -207,74 +168,87 @@
 			</div>
 			<input
 				bind:value={contributorsNr}
-				on:input={topContributors}
-				class="input my-2"
+				oninput={topContributors}
+				class="input"
 				type="number"
 				step="1"
 				min="1"
 				placeholder="Number of contributors to reward"
 			/>
 			{#if top.length > 0}
-				<div class="flex flex-row row mb-2">
-					<BalanceInput bind:token={selectedToken} bind:amount={rewardAmount} />
-				</div>
+				<BalanceInput bind:token={selectedToken} bind:amount={rewardAmount} />
 				<div class="w-full">
 					<span class="font-bold">Top contributors</span>
-					{#if top}
-						<ul class="list">
-							{#each top as login}
-								{@const author = byLogin.get(login)?.author}
-								{@const user = byLogin.get(login)?.user}
-								<li class="flex flex-row justify-between">
-									<figure class="avatar flex aspect-square overflow-hidden w-8 rounded-full">
+					<ul class="space-y-2">
+						{#each top as contributor (contributor.login || contributor.email)}
+							<li class="flex flex-row items-center justify-between gap-2">
+								<figure class="flex aspect-square w-8 shrink-0 overflow-hidden rounded-full">
+									{#if contributor.avatarUrl}
 										<img
-											class="avatar-image w-full h-full object-cover"
-											src={user?.avatar_url}
+											class="h-full w-full object-cover"
+											src={contributor.avatarUrl}
 											alt="avatar"
 										/>
-									</figure>
-									<span class="label mr-2">{author?.name} ({author?.email})</span>
-									<span>
-										<input
-											bind:group={selectedContributors}
-											value={user}
-											class="checkbox"
-											type="checkbox"
-										/>
-									</span>
-								</li>
-							{/each}
-						</ul>
-					{/if}
+									{/if}
+								</figure>
+								<span class="mr-2 flex-1 truncate text-left"
+									>{contributor.name} ({contributor.email})</span
+								>
+								<input
+									bind:checked={contributor.checked}
+									class="checkbox"
+									type="checkbox"
+									disabled={links.length > 0}
+								/>
+							</li>
+						{/each}
+					</ul>
 				</div>
 			{/if}
 
 			{#if top.length > 0 && !links.length}
-				<div class="flex flex-row justify-evenly mt-2">
-					<button
-						on:click={createLink}
-						disabled={creatingLinks}
-						class="btn variant-filled-primary w-full mr-1"
-						type="submit"
-					>
-						{#if !$isConnected}
-							Connect wallet
-						{:else if !creatingLinks}
-							Reward
-						{:else}
-							In progress ...
-						{/if}
-					</button>
-				</div>
-			{:else if links.length > 0}
-				<button on:click={sendEmails} class="btn variant-filled-primary w-full" type="submit">
-					Send emails
+				<button
+					onclick={createLink}
+					disabled={creatingLinks}
+					class="mt-2 btn w-full preset-filled-primary-500"
+					type="submit"
+				>
+					{#if !wallet.isConnected}
+						Connect wallet
+					{:else if !creatingLinks}
+						Reward
+					{:else}
+						In progress ...
+					{/if}
 				</button>
+			{:else if links.length > 0}
+				<button
+					onclick={sendEmails}
+					disabled={sendingEmails || emailsSent}
+					class="mt-2 btn w-full preset-filled-primary-500"
+					type="submit"
+				>
+					{#if emailsSent}
+						Emails sent
+					{:else if sendingEmails}
+						Sending ...
+					{:else}
+						Send emails
+					{/if}
+				</button>
+				<details class="text-left">
+					<summary class="cursor-pointer">Reward links</summary>
+					<ul class="mt-2 space-y-1 text-sm break-all">
+						{#each links as link, i (link)}
+							<li><span class="font-semibold">{rewarded[i]?.name}</span>: {link}</li>
+						{/each}
+					</ul>
+				</details>
 			{/if}
 		</form>
 	</div>
 
-	<div class="fixed bottom-4 right-4">
-		<a href="/dashboard" class="btn variant-ghost-tertiary"> Expert mode </a>
+	<div class="fixed right-4 bottom-4">
+		<a href="/dashboard" class="btn preset-tonal-tertiary"> Expert mode </a>
 	</div>
 </div>

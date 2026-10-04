@@ -1,66 +1,79 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
-	import type { Balance, Contributor, RewardAmount } from '$lib/types';
+	import type { Contributor } from '#lib/types.ts';
 
 	import BalanceInput from './Balance.svelte';
 
-	const dispatch = createEventDispatcher();
-	export let contributor: Contributor;
-	export let selected: boolean = false;
-	export let tabindex = 0;
-	export let reward: boolean = false;
-	export let rewardAmount: RewardAmount = {
-		contributor: contributor,
-		token: {} as Balance,
-		amount: 0
+	let {
+		contributor = $bindable(),
+		reward = false
+	}: {
+		contributor: Contributor;
+		reward?: boolean;
+	} = $props();
+
+	const toggle = () => (contributor.checked = !contributor.checked);
+	const onKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			toggle();
+		}
 	};
-	function onKeyPress() {
-		dispatch('selected', selected);
-	}
 </script>
 
 <div
-	class="card card-hover"
-	class:variant-filled={!selected}
-	class:variant-filled-surface={selected}
+	class="card border-2 transition-colors {contributor.checked
+		? 'border-primary-500 preset-filled-surface-200-800'
+		: 'border-transparent preset-filled-surface-100-900'}"
 >
-	<header class="card-header flex">
-		<a href="https://github.com/{contributor?.login}">
-			<h3 class="hover:underline">@{contributor?.login}</h3>
-		</a>
+	<header class="flex items-center justify-between p-4 pb-0">
+		{#if contributor.login}
+			<a href="https://github.com/{contributor.login}" target="_blank" rel="noreferrer">
+				<h3 class="h5 hover:underline">@{contributor.login}</h3>
+			</a>
+		{:else}
+			<h3 class="h5">{contributor.name}</h3>
+		{/if}
+		<input
+			class="checkbox"
+			type="checkbox"
+			aria-label="Select {contributor.login || contributor.name}"
+			bind:checked={contributor.checked}
+		/>
 	</header>
 	<section class="p-4">
 		<div
-			class="flex flex-row justify-between gap-3"
+			class="flex cursor-pointer flex-row justify-start gap-3"
 			role="button"
-			on:click={() => (selected = !selected)}
-			on:keypress={onKeyPress}
-			{tabindex}
+			tabindex="0"
+			onclick={toggle}
+			onkeydown={onKeyDown}
 		>
-			<figure class="avatar flex aspect-square overflow-hidden h-12 lg:h-32 rounded">
-				<img
-					class="avatar-image w-full h-full object-cover"
-					src={contributor?.avatarUrl}
-					alt="avatar"
-				/>
+			<figure class="flex aspect-square h-12 shrink-0 overflow-hidden rounded lg:h-32">
+				{#if contributor.avatarUrl}
+					<img class="h-full w-full object-cover" src={contributor.avatarUrl} alt="avatar" />
+				{:else}
+					<div class="flex h-full w-full items-center justify-center preset-tonal text-2xl">
+						{contributor.name.charAt(0).toUpperCase()}
+					</div>
+				{/if}
 			</figure>
-			<div class="flex flex-col justify-start">
-				<p>Name: <span class="font-semibold">{contributor?.name}</span></p>
-				<p>Email: {contributor?.email}</p>
-				<!-- <span class="mr-2">Twitter: {contributor?.twitter}</span>
-				<span class="mr-2">Discord: {contributor?.discord}</span> -->
+			<div class="flex min-w-0 flex-col justify-start">
+				<p>Name: <span class="font-semibold">{contributor.name}</span></p>
+				<p class="truncate">Email: {contributor.email}</p>
 			</div>
 		</div>
-		{#if reward}
-			<div class="mt-3 flex flex-row justify-end gap-x-1">
-				<BalanceInput bind:token={rewardAmount.token} bind:amount={rewardAmount.amount} />
+		{#if reward && contributor.reward}
+			<div class="mt-3">
+				<BalanceInput
+					bind:token={contributor.reward.token}
+					bind:amount={contributor.reward.amount}
+				/>
 			</div>
 		{/if}
 	</section>
-	<footer class="card-footer border-t border-black p-2">
+	<footer class="border-t border-surface-300-700 p-4">
 		<p>
-			<span class="chip variant-filled-secondary">{contributor.numberOfContributions}</span>
+			<span class="chip preset-filled-secondary-500">{contributor.numberOfContributions}</span>
 			Contribution{#if contributor.numberOfContributions > 1}s{/if}
 			over last 30 days
 		</p>

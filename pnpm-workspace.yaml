@@ -1,0 +1,7 @@
+allowBuilds:
+  '@sentry/cli': true
+  esbuild: true
+  keccak: true
+  bufferutil: true
+  utf-8-validate: true
+  '@reown/appkit': false

@@ -5,7 +5,7 @@ export interface CommitDetail {
 	url: string;
 	html_url: string;
 	comments_url: string;
-	author: User;
+	author: User | null;
 	committer: User;
 	parents: Parent[];
 }
@@ -74,6 +74,7 @@ export interface Contributor {
 	discord?: string;
 	checked: boolean;
 	numberOfContributions: number;
+	reward?: { amount: number; token?: Balance };
 }
 
 export interface Parent {
@@ -147,12 +148,6 @@ export interface Badge {
 	cacheSeconds?: number;
 	link?: string;
 }
-export interface RewardAmount {
-	contributor: Contributor;
-	amount: number;
-	token: Balance;
-}
-
 export interface Balance {
 	decimals: number;
 	symbol: string;

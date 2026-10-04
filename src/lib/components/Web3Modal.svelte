@@ -1,20 +1,16 @@
 <script lang="ts">
-	import { address, chainInfo, isConnected, modal } from '$lib/services/wallet';
-	import { shortAddress } from '$lib/strings';
-
-	async function connect() {
-		modal.open();
-	}
+	import { modal, wallet } from '#lib/services/wallet.svelte.ts';
+	import { shortAddress } from '#lib/strings.ts';
 </script>
 
-<span>
-	{#if $chainInfo}
-		{$chainInfo?.name ?? ''}
-	{/if}
-</span>
-<button class="btn btn-sm variant-ghost-surface" on:click={connect}>
-	{#if $isConnected}
-		{shortAddress($address)}
+{#if wallet.isConnected && wallet.chain}
+	<button type="button" class="hidden sm:inline" onclick={() => modal.open({ view: 'Networks' })}>
+		{wallet.chain.name}
+	</button>
+{/if}
+<button type="button" class="btn preset-tonal btn-sm" onclick={() => modal.open()}>
+	{#if wallet.isConnected}
+		{shortAddress(wallet.address)}
 	{:else}
 		Connect
 	{/if}

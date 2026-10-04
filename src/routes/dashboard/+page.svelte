@@ -1,119 +1,102 @@
 <script lang="ts">
-	import { getToastStore, ProgressRadial, SlideToggle } from '@skeletonlabs/skeleton';
+	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import debounce from 'just-debounce';
 
-	import BalanceInput from '$lib/components/Balance.svelte';
-	import ContributorCard from '$lib/components/ContributorCard.svelte';
-	import { loadContributors } from '$lib/pages/dashboard/lib';
-	import { sendReward } from '$lib/services/reward';
-	import { chainId, signer } from '$lib/services/wallet';
-	import type { Balance, Contributor, RewardAmount } from '$lib/types';
+	import BalanceInput from '#lib/components/Balance.svelte';
+	import ContributorCard from '#lib/components/ContributorCard.svelte';
+	import { loadContributors } from '#lib/contributors.ts';
+	import { sendReward } from '#lib/services/reward.ts';
+	import { wallet } from '#lib/services/wallet.svelte.ts';
+	import { toaster } from '#lib/toaster.ts';
+	import type { Balance, Contributor } from '#lib/types.ts';
 
 	import type { Snapshot } from './$types';
 
 	export const snapshot: Snapshot<string> = {
-		capture: () => JSON.stringify({ repository, contributors, selectAll, multiReward }),
+		capture: () => JSON.stringify({ repository, contributors, multiReward }),
 		restore: (value) => {
-			let data = JSON.parse(value);
+			const data = JSON.parse(value);
 			repository = data.repository;
 			contributors = data.contributors;
-			selectAll = data.selectAll;
 			multiReward = data.multiReward;
 		}
 	};
 
-	const toastStore = getToastStore();
+	let repository = $state('');
+	let contributors = $state<Contributor[]>([]);
+	let creatingLinks = $state(false);
 
-	let repository: string = '';
-	let contributors: Contributor[] = [];
-	let creatingLinks: boolean = false;
+	let multiReward = $state(false);
+	let singleRewardAmount = $state<{ amount: number; token?: Balance }>({ amount: 0 });
 
-	let selectAll: boolean = false;
-	let multiReward: boolean = false;
-	let multiRewardAmounts: RewardAmount[] = [];
-	let singleRewardAmount: { amount: number; token: Balance } = {
-		amount: 0,
-		token: {} as Balance
-	};
-	$: selectedContributors = contributors.filter((c) => c.checked);
-	$: isAllSelected = contributors.length > 0 && contributors.every((c) => c.checked);
+	let selectedContributors = $derived(contributors.filter((c) => c.checked));
+	let isAllSelected = $derived(contributors.length > 0 && contributors.every((c) => c.checked));
 
-	function toggleSelectAll() {
-		selectAll = !selectAll;
-		contributors = contributors.map((c) => ({ ...c, checked: selectAll }));
+	function setSelectAll(checked: boolean) {
+		contributors.forEach((c) => (c.checked = checked));
 	}
 
 	async function toastedReward() {
-		const toastId = toastStore.trigger({
-			message: 'Rewards are being created',
-			background: 'variant-filled-primary',
-			autohide: false
-		});
+		const toastId = toaster.create({ type: 'loading', title: 'Rewards are being created' });
 		try {
 			creatingLinks = true;
-			await reward();
+			const sent = await reward();
+			if (sent > 0) {
+				toaster.success({ title: `${sent} contributor(s) rewarded` });
+			}
 		} catch (error) {
-			console.log(error);
-			toastStore.trigger({
-				message: 'Failed to generate rewards',
-				background: 'variant-filled-warning'
-			});
+			console.error(error);
+			toaster.error({ title: 'Failed to generate rewards', description: (error as Error).message });
 		} finally {
-			toastStore.close(toastId);
+			toaster.dismiss(toastId);
 			creatingLinks = false;
 		}
 	}
 
-	async function reward() {
-		if (multiReward) {
-			const linkCreateReq = multiRewardAmounts
-				.filter((r) => r.amount > 0 && r.contributor)
-				.map((r) => {
-					return {
-						amount: r.amount,
-						token: r.token,
-						contributors: [r.contributor]
-					};
-				});
-			await Promise.all(
-				linkCreateReq.map(async (req) => {
-					return await singleReward($chainId, req.amount, req.token, req.contributors, repository);
-				})
-			);
-		} else {
-			await singleReward(
-				$chainId,
-				singleRewardAmount.amount,
-				singleRewardAmount.token,
-				selectedContributors,
+	/** returns the number of rewarded contributors */
+	async function reward(): Promise<number> {
+		const chainId = wallet.chainId;
+		const signer = wallet.signer;
+		if (!chainId || !signer) {
+			toaster.warning({ title: 'Connect your wallet first' });
+			return 0;
+		}
+
+		const requests = multiReward
+			? selectedContributors
+					.filter((c) => c.reward?.token && (c.reward?.amount ?? 0) > 0)
+					.map((c) => ({ amount: c.reward!.amount, token: c.reward!.token!, contributors: [c] }))
+			: [
+					{
+						amount: singleRewardAmount.amount,
+						token: singleRewardAmount.token,
+						contributors: selectedContributors
+					}
+				];
+
+		const valid = requests.filter(
+			(r): r is { amount: number; token: Balance; contributors: Contributor[] } =>
+				!!r.token && r.amount > 0 && r.contributors.length > 0
+		);
+		if (valid.length === 0) {
+			toaster.warning({ title: 'Specify a token and a reward amount' });
+			return 0;
+		}
+
+		let rewarded = 0;
+		// one after the other: each request needs the user to sign transactions in the wallet
+		for (const req of valid) {
+			const links = await sendReward({
+				signer,
+				chainId,
+				rewardAmount: req.amount,
+				selectedToken: req.token,
+				contributors: $state.snapshot(req.contributors),
 				repository
-			);
+			});
+			rewarded += links.length;
 		}
-	}
-
-	async function singleReward(
-		chainId: number | undefined,
-		rewardAmount: number,
-		token: Balance,
-		contributors: Contributor[],
-		repository: string
-	) {
-		if (!chainId || !rewardAmount || !token || selectedContributors.length === 0) {
-			return;
-		}
-
-		if (!$signer) {
-			return;
-		}
-		const links = await sendReward({
-			signer: $signer,
-			chainId: chainId,
-			rewardAmount: rewardAmount,
-			selectedToken: token,
-			contributors: contributors,
-			repository: repository
-		});
-		console.log('links', links);
+		return rewarded;
 	}
 
 	const load = debounce(async () => {
@@ -122,46 +105,56 @@
 			return;
 		}
 
-		let resp = await loadContributors(repository);
-		if (resp && resp.length > 0) {
-			contributors = resp;
-		}
-	}, 200);
+		const resp = await loadContributors(repository);
+		contributors = resp.map((c) => ({ ...c, reward: { amount: 0 } }));
+	}, 300);
 </script>
 
-<div class="flex lg:flex-row flex-col">
-	<section class="w-full lg:w-1/3 p-1">
-		<form class="w-full">
-			<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-				<div class="input-group-shim">https://github.com/</div>
+<div class="flex flex-col gap-4 lg:flex-row">
+	<section class="w-full p-1 lg:w-1/3">
+		<form class="w-full" onsubmit={(e) => e.preventDefault()}>
+			<div class="field-group grid-cols-[auto_1fr]">
+				<span class="label preset-tonal">https://github.com/</span>
 				<input
+					class="input"
 					bind:value={repository}
-					on:input={load}
+					oninput={load}
 					type="text"
 					id="repository"
 					placeholder="owner/name"
 				/>
 			</div>
 		</form>
-		<div class="flex flex-col gap-2 min-height-[500px]">
-			<div class="flex flex-row w-fit mt-2 gap-2">
-				<SlideToggle
+		<div class="flex flex-col gap-2">
+			<div class="mt-3 flex w-fit flex-row gap-4">
+				<Switch
 					name="selectAll"
-					on:change={toggleSelectAll}
-					bind:checked={isAllSelected}
+					checked={isAllSelected}
+					onCheckedChange={(e) => setSelectAll(e.checked)}
 					disabled={contributors.length === 0}
 				>
-					Select all
-				</SlideToggle>
-				<SlideToggle
+					<Switch.Control>
+						<Switch.Thumb />
+					</Switch.Control>
+					<Switch.Label>Select all</Switch.Label>
+					<Switch.HiddenInput />
+				</Switch>
+				<Switch
 					name="multiReward"
-					bind:checked={multiReward}
-					disabled={contributors.length === 0}>Multi rewards</SlideToggle
+					checked={multiReward}
+					onCheckedChange={(e) => (multiReward = e.checked)}
+					disabled={contributors.length === 0}
 				>
+					<Switch.Control>
+						<Switch.Thumb />
+					</Switch.Control>
+					<Switch.Label>Multi rewards</Switch.Label>
+					<Switch.HiddenInput />
+				</Switch>
 			</div>
 			{#if selectedContributors.length > 0}
 				{#if !multiReward}
-					<div class="mt-3 flex flex-row justify-end gap-x-1">
+					<div class="mt-3">
 						<BalanceInput
 							bind:token={singleRewardAmount.token}
 							bind:amount={singleRewardAmount.amount}
@@ -169,51 +162,48 @@
 					</div>
 				{/if}
 				<button
-					class="btn variant-filled-primary"
-					on:click={toastedReward}
+					class="btn preset-filled-primary-500"
+					onclick={toastedReward}
 					disabled={selectedContributors.length === 0 || creatingLinks}
 				>
 					Generate reward
 					{#if creatingLinks}
-						<ProgressRadial class="w-8 pl-2" />
+						<span
+							class="ml-2 inline-block size-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+						></span>
 					{/if}
 				</button>
 			{/if}
 		</div>
-		<div class="flex flex-col gap-2">
-			<h3 class="h3 text-center underline font-small">selected contributors</h3>
+		<div class="mt-4 flex flex-col gap-2">
+			<h3 class="text-center h6 underline">selected contributors</h3>
 			<ul>
-				{#each selectedContributors as c}
-					<li>{c.login}</li>
+				{#each selectedContributors as c (c.login || c.email)}
+					<li>{c.login || c.name}</li>
 				{/each}
 			</ul>
 		</div>
 	</section>
 	<section class="w-full">
 		{#if !repository}
-			<div class="flex flex-col items-center justify-center h-full">
+			<div class="flex h-full flex-col items-center justify-center">
 				<div class="text-2xl font-bold">No repository selected</div>
-				<div class="text-gray-500">Specify the name of a repository to start</div>
+				<div class="text-surface-500">Specify the name of a repository to start</div>
 			</div>
-		{:else if repository && contributors.length === 0}
-			<div class="flex flex-col items-center justify-center h-full">
+		{:else if contributors.length === 0}
+			<div class="flex h-full flex-col items-center justify-center">
 				<div class="text-2xl font-bold">No contributors found</div>
-				<div class="text-gray-500">Try another repository</div>
+				<div class="text-surface-500">Try another repository</div>
 			</div>
 		{:else}
-			<div class="grid md:grid-cols-1 lg:grid-cols-2 gap-3">
-				{#each contributors as contributor, i}
-					<ContributorCard
-						bind:selected={contributor.checked}
-						{contributor}
-						reward={multiReward}
-						bind:rewardAmount={multiRewardAmounts[i]}
-					/>
+			<div class="grid gap-3 md:grid-cols-1 lg:grid-cols-2">
+				{#each contributors as contributor, i (contributor.login || contributor.email)}
+					<ContributorCard bind:contributor={contributors[i]} reward={multiReward} />
 				{/each}
 			</div>
 		{/if}
 	</section>
-	<div class="fixed bottom-4 right-4">
-		<a href="/" class="btn variant-ghost-tertiary"> Simple mode </a>
+	<div class="fixed right-4 bottom-4">
+		<a href="/" class="btn preset-tonal-tertiary"> Simple mode </a>
 	</div>
 </div>

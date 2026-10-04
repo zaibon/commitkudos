@@ -1,8 +1,8 @@
 <script lang="ts">
-	import BadgeGenerator from '$lib/components/BadgeGenerator.svelte';
+	import BadgeGenerator from '#lib/components/BadgeGenerator.svelte';
 </script>
 
-<div class="w-3/4 mx-auto">
-	<h2 class="h2 mb-5">Generate your README badge</h2>
+<div class="mx-auto w-full lg:w-3/4">
+	<h2 class="mb-5 h2">Generate your README badge</h2>
 	<BadgeGenerator />
 </div>
