@@ -83,7 +83,7 @@
 		disabled={disabled || balances.list.length === 0}
 	>
 		{#if !wallet.isConnected}
-			<option value={undefined}>Connect wallet</option>
+			<option value={undefined}>Token</option>
 		{:else if balances.loading && balances.list.length === 0}
 			<option value={undefined}>Loading…</option>
 		{:else if balances.list.length === 0}
