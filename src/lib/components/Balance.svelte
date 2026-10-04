@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 
 	import { balances } from '#lib/services/balances.svelte.ts';
+	import { formatPrice, PRICE_SOURCE, prices } from '#lib/services/prices.svelte.ts';
 	import { wallet } from '#lib/services/wallet.svelte.ts';
 	import type { Balance } from '#lib/types.ts';
 
@@ -25,6 +26,11 @@
 			}
 		});
 	});
+
+	const price = $derived(prices.price(token));
+	const amountValue = $derived(price !== undefined && amount > 0 ? amount * price : undefined);
+	const balanceValue = $derived(price !== undefined && token ? token.amount * price : undefined);
+	const format = (value: number) => formatPrice(value, prices.currency);
 
 	const setMax = () => {
 		amount = token?.amount ?? 0;
@@ -66,3 +72,14 @@
 		{/each}
 	</select>
 </div>
+{#if price !== undefined}
+	<div
+		class="flex w-full justify-between gap-2 px-1 text-xs opacity-70"
+		title="Approximate value based on {PRICE_SOURCE} prices, refreshed every few minutes"
+	>
+		<span>{amountValue !== undefined ? `≈ ${format(amountValue)}` : ''}</span>
+		{#if balanceValue !== undefined}
+			<span>Balance ≈ {format(balanceValue)}</span>
+		{/if}
+	</div>
+{/if}
