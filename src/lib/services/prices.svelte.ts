@@ -34,17 +34,26 @@ const chains: Record<string, { slug: string; native: string }> = {
 
 const tokenDetails = TOKEN_DETAILS as { chainId: string; tokens: { address: string }[] }[];
 
-type EurPrices = Record<string, number>;
+export type Currency = 'EUR' | 'USD';
+const CURRENCY_KEY = 'currency';
+
+interface ChainPrices {
+	fetchedAt: number;
+	/** USD price per price key */
+	usd: Record<string, number>;
+	/** USD value of one euro, missing when the EUR rate couldn't be priced */
+	eurUsd?: number;
+}
 
 const priceKey = (address: string) => (isNativeToken(address) ? 'native' : address.toLowerCase());
 
 /**
- * Fetches the EUR price of the native coin and of every token the Peanut SDK lists for a chain,
- * in a single request. Tokens without a (confident) price are left out.
+ * Fetches the USD price of the native coin and of every token the Peanut SDK lists for a chain,
+ * plus the EUR rate, in a single request. Tokens without a (confident) price are left out.
  */
-export async function fetchEurPrices(chainId: string): Promise<EurPrices> {
+export async function fetchPrices(chainId: string): Promise<Omit<ChainPrices, 'fetchedAt'>> {
 	const chain = chains[chainId];
-	if (!chain) return {};
+	if (!chain) return { usd: {} };
 
 	const tokens = tokenDetails.find((c) => c.chainId === chainId)?.tokens ?? [];
 	// price key -> DefiLlama coin id
@@ -65,28 +74,66 @@ export async function fetchEurPrices(chainId: string): Promise<EurPrices> {
 		if (!quote || !(quote.price > 0) || (quote.confidence ?? 1) < MIN_CONFIDENCE) return;
 		return quote.price;
 	};
-	const eurUsd = usdPrice(EUR_COIN);
-	if (!eurUsd) throw new Error('missing EUR rate');
 
-	const prices: EurPrices = {};
+	const usd: Record<string, number> = {};
 	for (const [key, id] of Object.entries(coins)) {
-		const usd = usdPrice(id);
-		if (usd) prices[key] = usd / eurUsd;
+		const price = usdPrice(id);
+		if (price) usd[key] = price;
 	}
-	return prices;
+	return { usd, eurUsd: usdPrice(EUR_COIN) };
+}
+
+function readCurrency(): Currency {
+	try {
+		if (localStorage.getItem(CURRENCY_KEY) === 'USD') return 'USD';
+	} catch {
+		// storage unavailable
+	}
+	return 'EUR';
 }
 
 class Prices {
-	byChain = $state.raw<Record<string, { fetchedAt: number; eur: EurPrices }>>({});
+	byChain = $state.raw<Record<string, ChainPrices>>({});
+	#currency = $state<Currency>(readCurrency());
 
-	/** Approximate EUR price of one unit of `token`, if known. */
-	eur(token?: Balance): number | undefined {
+	get currency() {
+		return this.#currency;
+	}
+
+	set currency(value: Currency) {
+		this.#currency = value;
+		try {
+			localStorage.setItem(CURRENCY_KEY, value);
+		} catch {
+			// storage unavailable
+		}
+	}
+
+	/** Approximate price of one unit of `token` in the selected currency, if known. */
+	price(token?: Balance): number | undefined {
 		if (!token) return;
-		return this.byChain[token.chainId]?.eur[priceKey(token.address)];
+		const chain = this.byChain[token.chainId];
+		const usd = chain?.usd[priceKey(token.address)];
+		if (usd === undefined) return;
+		if (this.currency === 'USD') return usd;
+		return chain.eurUsd ? usd / chain.eurUsd : undefined;
 	}
 }
 
 export const prices = new Prices();
+
+const amountFormat = new Intl.NumberFormat(undefined, {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+/** Formats a value in the selected currency, e.g. "4.62 €" or "$4.62". */
+export function formatPrice(value: number, currency: Currency) {
+	const small = value > 0 && value < 0.01;
+	const amount = small ? '0.01' : amountFormat.format(value);
+	const formatted = currency === 'USD' ? `$${amount}` : `${amount} €`;
+	return small ? `< ${formatted}` : formatted;
+}
 
 const inFlight: Record<string, boolean> = {};
 
@@ -97,8 +144,8 @@ async function loadPrices(chainId: string) {
 
 	inFlight[chainId] = true;
 	try {
-		const eur = await fetchEurPrices(chainId);
-		prices.byChain = { ...prices.byChain, [chainId]: { fetchedAt: Date.now(), eur } };
+		const fetched = await fetchPrices(chainId);
+		prices.byChain = { ...prices.byChain, [chainId]: { fetchedAt: Date.now(), ...fetched } };
 	} catch (err) {
 		// keep recent prices and try again at the next refresh, but don't show outdated ones
 		console.warn('Failed to fetch token prices', err);

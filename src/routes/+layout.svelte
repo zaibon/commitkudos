@@ -4,6 +4,7 @@
 	import { AppBar, Toast } from '@skeletonlabs/skeleton-svelte';
 	import { inject } from '@vercel/analytics';
 
+	import CurrencySwitch from '#lib/components/CurrencySwitch.svelte';
 	import LightSwitch from '#lib/components/LightSwitch.svelte';
 	import Web3Modal from '#lib/components/Web3Modal.svelte';
 	import { toaster } from '#lib/toaster.ts';
@@ -39,6 +40,7 @@
 			<AppBar.Headline></AppBar.Headline>
 			<AppBar.Trail class="items-center">
 				<Web3Modal />
+				<CurrencySwitch />
 				<LightSwitch />
 			</AppBar.Trail>
 		</AppBar.Toolbar>
