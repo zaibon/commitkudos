@@ -1,11 +1,69 @@
 @import 'tailwindcss';
 @import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton/themes/legacy';
 @import '@skeletonlabs/skeleton-svelte';
+@import './theme.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
 html,
 body {
 	@apply h-full;
+}
+
+@layer base {
+	/* visible keyboard focus on every interactive element */
+	:where(
+		a,
+		button,
+		summary,
+		[role='button'],
+		[role='radio'],
+		input[type='checkbox']
+	):focus-visible {
+		outline: 2px solid var(--color-primary-500);
+		outline-offset: 2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	::before,
+	::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+body {
+	/* soft brand glow behind the content */
+	background-image:
+		radial-gradient(
+			60rem 30rem at 90% -10%,
+			color-mix(in oklab, var(--color-primary-500) 12%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			50rem 25rem at -10% 110%,
+			color-mix(in oklab, var(--color-secondary-500) 10%, transparent),
+			transparent 70%
+		);
+	background-attachment: fixed;
+
+	@variant dark {
+		background-image:
+			radial-gradient(
+				60rem 30rem at 90% -10%,
+				color-mix(in oklab, var(--color-primary-500) 22%, transparent),
+				transparent 70%
+			),
+			radial-gradient(
+				50rem 25rem at -10% 110%,
+				color-mix(in oklab, var(--color-secondary-500) 10%, transparent),
+				transparent 70%
+			);
+	}
 }

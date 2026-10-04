@@ -25,7 +25,7 @@
 
 <button
 	type="button"
-	class="btn-icon preset-tonal"
+	class="btn-icon text-surface-600-400 transition-colors hover:preset-tonal hover:text-surface-950-50"
 	title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
 	aria-label="Toggle light / dark mode"
 	onclick={() => (dark = !dark)}
