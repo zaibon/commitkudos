@@ -1,5 +1,6 @@
 import type { ethers } from 'ethers';
 
+import { CLAIM_PATH } from '#lib/claim.ts';
 import type { Balance, Email } from '#lib/types.ts';
 
 import { createLinks } from './peanut';
@@ -34,7 +35,8 @@ export async function createRewardLinks(params: {
 		chainId: params.chainId,
 		amount: params.rewardAmount,
 		numberOfLinks: params.contributors.length,
-		token: params.selectedToken
+		token: params.selectedToken,
+		baseUrl: new URL(CLAIM_PATH, window.location.origin).href
 	});
 }
 

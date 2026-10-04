@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 
+import { CLAIM_PATH } from '#lib/claim.ts';
 import { sendMail } from '#lib/services/mail.ts';
 import type { Email } from '#lib/types.ts';
 
@@ -7,16 +8,17 @@ import type { RequestHandler } from './$types';
 
 const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
-function isPeanutLink(link: string) {
+/** Only links to this site's claim page are emailed. */
+function isClaimLink(link: string, origin: string) {
 	try {
 		const url = new URL(link);
-		return url.protocol === 'https:' && /(^|\.)peanut\.(to|me)$/.test(url.hostname);
+		return url.origin === origin && url.pathname === CLAIM_PATH && url.hash.startsWith('#p=');
 	} catch {
 		return false;
 	}
 }
 
-function validate(email: Partial<Email>): string | undefined {
+function validate(email: Partial<Email>, origin: string): string | undefined {
 	if (!email.name || !email.email || !email.repoName || !email.link) {
 		return 'name, email, repoName and link are required';
 	}
@@ -26,14 +28,14 @@ function validate(email: Partial<Email>): string | undefined {
 	if (!/^[\w.-]+\/[\w.-]+$/.test(email.repoName)) {
 		return 'invalid repository name';
 	}
-	if (!isPeanutLink(email.link)) {
-		return 'link must be a peanut link';
+	if (!isClaimLink(email.link, origin)) {
+		return 'link must be a CommitKudos claim link';
 	}
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, url }) => {
 	const email: Partial<Email> = await request.json().catch(() => ({}));
-	const invalid = validate(email);
+	const invalid = validate(email, url.origin);
 	if (invalid) {
 		return json({ error: invalid }, { status: 400 });
 	}
