@@ -18,6 +18,7 @@
 		normalizeRepository,
 		type RepoResult
 	} from '#lib/repository.ts';
+	import { formatPrice, prices } from '#lib/services/prices.svelte.ts';
 	import { sendReward } from '#lib/services/reward.ts';
 	import { modal, wallet } from '#lib/services/wallet.svelte.ts';
 	import { toaster } from '#lib/toaster.ts';
@@ -81,8 +82,17 @@
 		} else {
 			add(singleRewardAmount.token, singleRewardAmount.amount * selectedContributors.length);
 		}
-		return Object.values(sums);
+		return Object.values(sums).map((t) => {
+			const price = prices.price(t.token);
+			return { ...t, value: price !== undefined ? t.amount * price : undefined };
+		});
 	});
+	// only add up the fiat values when every token could be priced
+	let totalValue = $derived(
+		totals.length > 1 && totals.every((t) => t.value !== undefined)
+			? totals.reduce((sum, t) => sum + (t.value ?? 0), 0)
+			: undefined
+	);
 	let insufficient = $derived(totals.filter((t) => t.amount > t.token.amount));
 	let withoutAmount = $derived(
 		multiReward
@@ -318,12 +328,27 @@
 					{#each totals as total (total.token.address)}
 						<li class="flex justify-between gap-2">
 							<span class="text-surface-600-400">Total {total.token.symbol}</span>
-							<span class="font-semibold tabular-nums">
-								{formatAmount(total.amount)}
-								{total.token.symbol}
+							<span class="text-right tabular-nums">
+								<span class="font-semibold">
+									{formatAmount(total.amount)}
+									{total.token.symbol}
+								</span>
+								{#if total.value !== undefined}
+									<span class="block text-xs text-surface-600-400">
+										≈ {formatPrice(total.value, prices.currency)}
+									</span>
+								{/if}
 							</span>
 						</li>
 					{/each}
+					{#if totalValue !== undefined}
+						<li
+							class="flex justify-between gap-2 border-t border-surface-200-800 pt-1 font-semibold"
+						>
+							<span>Total</span>
+							<span class="tabular-nums">≈ {formatPrice(totalValue, prices.currency)}</span>
+						</li>
+					{/if}
 				</ul>
 			{/if}
 			{#each insufficient as total (total.token.address)}

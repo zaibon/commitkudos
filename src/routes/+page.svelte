@@ -22,6 +22,7 @@
 		normalizeRepository,
 		type RepoResult
 	} from '#lib/repository.ts';
+	import { formatPrice, prices } from '#lib/services/prices.svelte.ts';
 	import { createRewardLinks, sendRewardEmails } from '#lib/services/reward.ts';
 	import { modal, wallet } from '#lib/services/wallet.svelte.ts';
 	import { toaster } from '#lib/toaster.ts';
@@ -54,6 +55,10 @@
 
 	let total = $derived((rewardAmount || 0) * selected.length);
 	let insufficient = $derived(!!selectedToken && total > selectedToken.amount);
+	let totalPrice = $derived.by(() => {
+		const price = prices.price(selectedToken);
+		return price !== undefined && total > 0 ? total * price : undefined;
+	});
 
 	let creatingLinks = $state(false);
 	let sendingEmails = $state(false);
@@ -385,9 +390,11 @@
 						{selectedToken.symbol}
 						{#if wallet.chain}on {wallet.chain.name}{/if}
 					</span>
-					<span class="font-semibold tabular-nums">
-						Total {formatAmount(total)}
-						{selectedToken.symbol}
+					<span class="tabular-nums">
+						<span class="font-semibold">Total {formatAmount(total)} {selectedToken.symbol}</span>
+						{#if totalPrice !== undefined}
+							<span class="text-surface-600-400">≈ {formatPrice(totalPrice, prices.currency)}</span>
+						{/if}
 					</span>
 				</div>
 				{#if insufficient}
