@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import { handleErrorWithSentry } from '@sentry/sveltekit';
 
+import { CLAIM_PATH, redactClaimSecrets } from '#lib/claim.ts';
 import { dev } from '$app/env';
 
 Sentry.init({
@@ -16,10 +17,16 @@ Sentry.init({
 	replaysOnErrorSampleRate: 1.0,
 
 	// If you don't want to use Session Replay, just remove the line below:
-	integrations: [Sentry.replayIntegration()],
+	// Replays record the page URL, which on the claim page holds the reward link's password.
+	// Claim links are always opened with a full page load, so no replay runs there.
+	integrations: window.location.pathname === CLAIM_PATH ? [] : [Sentry.replayIntegration()],
+	beforeBreadcrumb: (breadcrumb) => redactClaimSecrets(breadcrumb),
 
 	environment: dev ? 'development' : 'production'
 });
+
+// Reward links carry their password in the URL fragment: keep it out of every event sent to Sentry.
+Sentry.addEventProcessor((event) => redactClaimSecrets(event));
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = handleErrorWithSentry();

@@ -6,6 +6,7 @@
 	import { Toast } from '@skeletonlabs/skeleton-svelte';
 	import { inject } from '@vercel/analytics';
 
+	import { redactClaimSecret } from '#lib/claim.ts';
 	import CurrencySwitch from '#lib/components/CurrencySwitch.svelte';
 	import LightSwitch from '#lib/components/LightSwitch.svelte';
 	import Web3Modal from '#lib/components/Web3Modal.svelte';
@@ -16,7 +17,11 @@
 
 	let { children } = $props();
 
-	inject({ mode: dev ? 'development' : 'production' });
+	inject({
+		mode: dev ? 'development' : 'production',
+		// reward links carry their password in the URL fragment
+		beforeSend: (event) => ({ ...event, url: redactClaimSecret(event.url) })
+	});
 
 	const nav = [
 		{ href: '/', label: 'Reward' },

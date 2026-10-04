@@ -29,6 +29,27 @@ export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [
 	sepolia
 ];
 
+// Keyless public RPCs (CORS enabled), used to read a chain without a connected wallet.
+// The Peanut SDK's own default RPCs rely on an Infura key that no longer works.
+const rpcUrls: Record<number, string> = {
+	[mainnet.id]: 'https://ethereum-rpc.publicnode.com',
+	[optimism.id]: 'https://optimism-rpc.publicnode.com',
+	[bsc.id]: 'https://bsc-rpc.publicnode.com',
+	[gnosis.id]: 'https://gnosis-rpc.publicnode.com',
+	[polygon.id]: 'https://polygon-bor-rpc.publicnode.com',
+	[base.id]: 'https://base-rpc.publicnode.com',
+	[arbitrum.id]: 'https://arbitrum-one-rpc.publicnode.com',
+	[avalanche.id]: 'https://avalanche-c-chain-rpc.publicnode.com/ext/bc/C/rpc',
+	[linea.id]: 'https://linea-rpc.publicnode.com',
+	[sepolia.id]: 'https://ethereum-sepolia-rpc.publicnode.com'
+};
+
+export function publicProvider(chainId: number) {
+	const url = rpcUrls[chainId];
+	if (!url) throw new Error(`unsupported chain ${chainId}`);
+	return new ethers.providers.StaticJsonRpcProvider(url, chainId);
+}
+
 const projectId = 'f71066d156ed5402df3e3e516de81a96';
 const metadata = {
 	name: 'CommitKudos',
